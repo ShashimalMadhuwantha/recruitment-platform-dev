@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { applicantProfileApi } from './api';
+import { useAuth } from '../../app/providers';
 import type {
   UpdateApplicantProfileDto,
   WorkExperienceDto,
@@ -9,9 +10,11 @@ import type {
 } from './types';
 
 export const useApplicantProfile = () => {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['applicant-profile'],
+    queryKey: ['applicant-profile', user?.id],
     queryFn: () => applicantProfileApi.getProfile(),
+    enabled: !!user,
   });
 };
 
@@ -180,9 +183,11 @@ export const useDeletePortfolio = () => {
 
 // Resumes / CVs
 export const useResumes = () => {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['applicant-resumes'],
+    queryKey: ['applicant-resumes', user?.id],
     queryFn: () => applicantProfileApi.listResumes(),
+    enabled: !!user,
   });
 };
 
@@ -240,9 +245,11 @@ export const useApplyResumeToProfile = () => {
 
 // Blind Recruitment Preview
 export const useAnonymizedPreview = () => {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['anonymized-preview'],
+    queryKey: ['anonymized-preview', user?.id],
     queryFn: () => applicantProfileApi.getAnonymizedPreview(),
+    enabled: !!user,
   });
 };
 

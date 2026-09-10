@@ -63,6 +63,7 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (newAccessToken: string, newRefreshToken: string, newUser: AuthUser) => {
+    queryClient.clear();
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
     setUser(newUser);
@@ -72,6 +73,7 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    queryClient.clear();
     setAccessToken(null);
     setRefreshToken(null);
     setUser(null);
