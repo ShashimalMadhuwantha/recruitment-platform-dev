@@ -58,9 +58,10 @@ export const createApp = (): Express => {
   app.use('/api/v1/job-vacancies', jobVacancyRouter);
   app.use('/api/v1/application-pipelines', applicationPipelineRouter);
   app.use('/api/v1/notifications', notificationsRouter);
-  app.use('/api/v1/admin', adminRouter);
-  app.use('/api/v1/admin/moderation', moderationRouter);
+  app.use('/api/v1/taxonomy', systemConfigRouter);
   app.use('/api/v1/admin/config', systemConfigRouter);
+  app.use('/api/v1/admin/moderation', moderationRouter);
+  app.use('/api/v1/admin', adminRouter);
 
   // 404 Handler
   app.use((req: Request, _res: Response, next: NextFunction) => {

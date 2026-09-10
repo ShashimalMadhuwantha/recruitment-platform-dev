@@ -11,6 +11,22 @@ jobs:
     name: Lint, Typecheck & Test
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: recruitment_test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    env:
+      DATABASE_URL: 'mysql://root:root@127.0.0.1:3306/recruitment_test_db'
+      JWT_SECRET: 'test-secret-jwt-key-min-32-chars-long'
+      ADMIN_INITIAL_EMAIL: 'admin@atsplatform.local'
+      ADMIN_INITIAL_PASSWORD: 'AdminSecurePassword123!'
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -28,9 +44,13 @@ jobs:
         run: npm run build --workspace=shared
 
       - name: Generate Prisma Client
-        run: npm run db:generate --workspace=backend
-        env:
-          DATABASE_URL: 'mysql://root:root@localhost:3306/recruitment_test_db'
+        run: npm run db:generate
+
+      - name: Push Database Schema to Test Database
+        run: npm run db:push
+
+      - name: Seed Master Taxonomy & Initial Data
+        run: npm run db:seed
 
       - name: Typecheck Shared, Backend & Frontend
         run: npm run typecheck
@@ -39,8 +59,6 @@ jobs:
         run: npm run test:backend
         env:
           NODE_ENV: test
-          DATABASE_URL: 'mysql://root:root@localhost:3306/recruitment_test_db'
-          JWT_SECRET: 'test-secret-jwt-key-min-32-chars-long'
 
       - name: Run Frontend Component Tests
         run: npm run test:frontend

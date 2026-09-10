@@ -9,6 +9,8 @@ import MfaVerificationPage from '../pages/auth/MfaVerificationPage';
 import OAuthCallbackPage from '../pages/auth/OAuthCallbackPage';
 import ApplicantDashboardPage from '../pages/applicant/ApplicantDashboardPage';
 import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
+import RecruiterJobsPage from '../pages/recruiter/RecruiterJobsPage';
+import JobCreationWizardPage from '../pages/recruiter/JobCreationWizardPage';
 import AdminOverviewPage from '../pages/admin/AdminOverviewPage';
 import AdminCompaniesPage from '../pages/admin/AdminCompaniesPage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
@@ -61,12 +63,44 @@ export const AppRouter: React.FC = () => {
             path="/recruiter"
             element={
               <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
-                <RecruiterPipelinePage />
+                <RecruiterJobsPage />
               </ProtectedRoute>
             }
           />
           <Route
             path="/recruiter/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
+                <RecruiterJobsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recruiter/jobs"
+            element={
+              <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
+                <RecruiterJobsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recruiter/jobs/new"
+            element={
+              <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
+                <JobCreationWizardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recruiter/jobs/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
+                <JobCreationWizardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recruiter/pipeline"
             element={
               <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
                 <RecruiterPipelinePage />

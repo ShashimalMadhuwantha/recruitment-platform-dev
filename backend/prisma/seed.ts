@@ -56,26 +56,91 @@ async function main() {
 
   // 3. Seed Standard Skills Taxonomy
   const standardSkills = [
+    // Programming Languages
     { name: 'TypeScript', category: 'Programming Languages', aliasesJson: ['TS', 'Typescript'] },
     { name: 'JavaScript', category: 'Programming Languages', aliasesJson: ['JS', 'ES6', 'ECMAScript'] },
+    { name: 'Python', category: 'Programming Languages', aliasesJson: ['Python 3', 'Py'] },
+    { name: 'Java', category: 'Programming Languages', aliasesJson: ['Java 8', 'Java 17', 'Core Java'] },
+    { name: 'C#', category: 'Programming Languages', aliasesJson: ['CSharp', '.NET C#'] },
+    { name: 'Go', category: 'Programming Languages', aliasesJson: ['Golang'] },
+    { name: 'Rust', category: 'Programming Languages', aliasesJson: ['Rustlang'] },
+    { name: 'C++', category: 'Programming Languages', aliasesJson: ['CPP'] },
+    { name: 'PHP', category: 'Programming Languages', aliasesJson: ['PHP 8'] },
+    { name: 'Ruby', category: 'Programming Languages', aliasesJson: ['Ruby on Rails'] },
+    { name: 'Swift', category: 'Programming Languages', aliasesJson: ['Apple Swift', 'iOS Swift'] },
+    { name: 'Kotlin', category: 'Programming Languages', aliasesJson: ['Android Kotlin'] },
+
+    // Frontend
     { name: 'React', category: 'Frontend', aliasesJson: ['ReactJS', 'React.js'] },
-    { name: 'Node.js', category: 'Backend', aliasesJson: ['NodeJS', 'Node'] },
-    { name: 'Express.js', category: 'Backend', aliasesJson: ['Express', 'ExpressJS'] },
-    { name: 'MySQL', category: 'Databases', aliasesJson: ['MySQL Database', 'RDBMS'] },
-    { name: 'PostgreSQL', category: 'Databases', aliasesJson: ['Postgres', 'PGSQL'] },
+    { name: 'Next.js', category: 'Frontend', aliasesJson: ['NextJS', 'Next'] },
+    { name: 'Vue.js', category: 'Frontend', aliasesJson: ['Vue', 'VueJS', 'Vue 3'] },
+    { name: 'Angular', category: 'Frontend', aliasesJson: ['Angular 2+', 'AngularJS'] },
     { name: 'Tailwind CSS', category: 'Frontend', aliasesJson: ['Tailwind', 'TailwindCSS'] },
     { name: 'HTML5', category: 'Frontend', aliasesJson: ['HTML', 'Web Markup'] },
-    { name: 'CSS3', category: 'Frontend', aliasesJson: ['CSS', 'Cascading Style Sheets'] },
+    { name: 'CSS3', category: 'Frontend', aliasesJson: ['CSS', 'Cascading Style Sheets', 'SCSS', 'Sass'] },
+    { name: 'Redux', category: 'Frontend', aliasesJson: ['Redux Toolkit', 'RTK'] },
+    { name: 'Webpack', category: 'Frontend', aliasesJson: ['Vite', 'Bundling'] },
+
+    // Backend
+    { name: 'Node.js', category: 'Backend', aliasesJson: ['NodeJS', 'Node'] },
+    { name: 'Express.js', category: 'Backend', aliasesJson: ['Express', 'ExpressJS'] },
+    { name: 'NestJS', category: 'Backend', aliasesJson: ['Nest.js'] },
+    { name: 'Django', category: 'Backend', aliasesJson: ['Python Django'] },
+    { name: 'FastAPI', category: 'Backend', aliasesJson: ['Python FastAPI'] },
+    { name: 'Spring Boot', category: 'Backend', aliasesJson: ['Spring Framework', 'Java Spring'] },
+    { name: 'ASP.NET Core', category: 'Backend', aliasesJson: ['.NET Core', 'ASP.NET'] },
+
+    // Databases
+    { name: 'MySQL', category: 'Databases', aliasesJson: ['MySQL Database', 'RDBMS'] },
+    { name: 'PostgreSQL', category: 'Databases', aliasesJson: ['Postgres', 'PGSQL'] },
+    { name: 'MongoDB', category: 'Databases', aliasesJson: ['Mongo', 'NoSQL'] },
+    { name: 'Redis', category: 'Databases', aliasesJson: ['Redis Cache'] },
+    { name: 'Elasticsearch', category: 'Databases', aliasesJson: ['ELK Stack', 'Elastic'] },
+    { name: 'DynamoDB', category: 'Databases', aliasesJson: ['AWS DynamoDB'] },
+    { name: 'Prisma ORM', category: 'Databases', aliasesJson: ['Prisma'] },
+
+    // DevOps & Tools
     { name: 'Git', category: 'DevOps & Tools', aliasesJson: ['GitHub', 'GitLab', 'Version Control'] },
+    { name: 'Docker', category: 'DevOps & Tools', aliasesJson: ['Containerization', 'Docker Compose'] },
+    { name: 'Kubernetes', category: 'DevOps & Tools', aliasesJson: ['K8s'] },
+    { name: 'CI/CD Pipelines', category: 'DevOps & Tools', aliasesJson: ['GitHub Actions', 'Jenkins', 'GitLab CI'] },
+    { name: 'Terraform', category: 'DevOps & Tools', aliasesJson: ['IaC', 'Infrastructure as Code'] },
     { name: 'Nginx', category: 'DevOps & Tools', aliasesJson: ['NGINX Web Server'] },
-    { name: 'PM2', category: 'DevOps & Tools', aliasesJson: ['Process Manager 2'] },
+    { name: 'Linux / Bash', category: 'DevOps & Tools', aliasesJson: ['Shell Scripting', 'Unix'] },
+
+    // Cloud Infrastructure
+    { name: 'Amazon Web Services (AWS)', category: 'Cloud Infrastructure', aliasesJson: ['AWS', 'EC2', 'S3', 'Lambda'] },
+    { name: 'Microsoft Azure', category: 'Cloud Infrastructure', aliasesJson: ['Azure', 'Azure Cloud'] },
+    { name: 'Google Cloud Platform (GCP)', category: 'Cloud Infrastructure', aliasesJson: ['GCP', 'Google Cloud'] },
+
+    // Architecture
     { name: 'REST APIs', category: 'Architecture', aliasesJson: ['RESTful APIs', 'API Design'] },
-    { name: 'GraphQL', category: 'Architecture', aliasesJson: ['GQL'] },
-    { name: 'Python', category: 'Programming Languages', aliasesJson: ['Python 3', 'Py'] },
-    { name: 'Data Analysis', category: 'Data Science', aliasesJson: ['Data Analytics'] },
+    { name: 'GraphQL', category: 'Architecture', aliasesJson: ['GQL', 'Apollo GraphQL'] },
+    { name: 'Microservices Architecture', category: 'Architecture', aliasesJson: ['Microservices', 'Distributed Systems'] },
+    { name: 'Event-Driven Architecture', category: 'Architecture', aliasesJson: ['Kafka', 'RabbitMQ', 'Message Queues'] },
+    { name: 'System Design', category: 'Architecture', aliasesJson: ['High Availability', 'Scalability'] },
+
+    // AI & Data
     { name: 'Natural Language Processing', category: 'AI & Data', aliasesJson: ['NLP', 'Text Processing'] },
+    { name: 'Machine Learning', category: 'AI & Data', aliasesJson: ['ML', 'Scikit-learn'] },
+    { name: 'Deep Learning', category: 'AI & Data', aliasesJson: ['PyTorch', 'TensorFlow', 'Neural Networks'] },
+    { name: 'Large Language Models (LLMs)', category: 'AI & Data', aliasesJson: ['LangChain', 'OpenAI', 'Prompt Engineering'] },
+    { name: 'Data Analysis', category: 'AI & Data', aliasesJson: ['Data Analytics', 'Pandas', 'NumPy'] },
+    { name: 'Data Engineering', category: 'AI & Data', aliasesJson: ['ETL', 'Apache Spark', 'Airflow'] },
+
+    // Quality Assurance
     { name: 'Unit Testing', category: 'Quality Assurance', aliasesJson: ['Vitest', 'Jest', 'TDD'] },
-    { name: 'UI/UX Design', category: 'Design', aliasesJson: ['Figma', 'User Experience'] },
+    { name: 'End-to-End Testing (E2E)', category: 'Quality Assurance', aliasesJson: ['Cypress', 'Playwright', 'Selenium'] },
+    { name: 'Integration Testing', category: 'Quality Assurance', aliasesJson: ['API Testing', 'Postman'] },
+
+    // Design
+    { name: 'UI/UX Design', category: 'Design', aliasesJson: ['Figma', 'User Experience', 'Prototyping'] },
+    { name: 'Design Systems', category: 'Design', aliasesJson: ['Storybook', 'Component Libraries'] },
+
+    // Management & Agile
+    { name: 'Agile / Scrum', category: 'Management', aliasesJson: ['Scrum', 'Kanban', 'Sprint Planning'] },
+    { name: 'Product Management', category: 'Management', aliasesJson: ['PRD', 'Roadmapping', 'User Stories'] },
+    { name: 'Technical Leadership', category: 'Management', aliasesJson: ['Team Lead', 'Engineering Manager'] },
   ];
 
   for (const skill of standardSkills) {

@@ -315,3 +315,107 @@ export interface AtsWeightPreset {
   weights: ScoreWeightConfig;
 }
 
+// -------------------------------------------------------------
+// Job Vacancy Management & Lifecycle (Epic 5)
+// -------------------------------------------------------------
+export interface ScreeningQuestion {
+  id: string;
+  question: string;
+  type: 'YES_NO' | 'TEXT' | 'MULTIPLE_CHOICE';
+  options?: string[];
+  isKnockout: boolean;
+  requiredAnswer?: string;
+}
+
+export interface JobRequiredSkillDto {
+  skillId: string;
+  priority: SkillPriority;
+  weight?: number;
+  minProficiency: number; // 1 - 5
+  skill?: {
+    id: string;
+    name: string;
+    category?: string | null;
+  };
+}
+
+export interface JobRequirementDto {
+  minExperienceYears?: number | null;
+  maxExperienceYears?: number | null;
+  educationLevel?: string | null;
+  requiredCertifications?: string[] | null;
+}
+
+export interface CreateJobVacancyDto {
+  title: string;
+  description: string;
+  requirementsSummary?: string | null;
+  location?: string | null;
+  employmentType?: EmploymentType;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  deadline?: string | null;
+  status?: JobStatus; // DRAFT or PUBLISHED
+  requirements?: JobRequirementDto;
+  requiredSkills?: JobRequiredSkillDto[];
+  screeningQuestions?: ScreeningQuestion[];
+  atsWeightOverrides?: ScoreWeightConfig | null;
+}
+
+export interface UpdateJobVacancyDto extends Partial<CreateJobVacancyDto> {}
+
+export interface JobVacancyDetail {
+  id: string;
+  companyId: string;
+  title: string;
+  description: string;
+  requirementsSummary?: string | null;
+  location?: string | null;
+  employmentType: EmploymentType;
+  salaryMin?: number | string | null;
+  salaryMax?: number | string | null;
+  status: JobStatus;
+  deadline?: string | null;
+  screeningQuestionsJson?: ScreeningQuestion[] | null;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  company?: {
+    id: string;
+    name: string;
+    logoUrl?: string | null;
+    industry?: string | null;
+  };
+  jobRequirement?: JobRequirementDto | null;
+  jobRequiredSkills?: JobRequiredSkillDto[];
+  scoreWeightConfigs?: ScoreWeightConfig[];
+  _count?: {
+    applications?: number;
+  };
+}
+
+export interface RecruiterJobListItem {
+  id: string;
+  companyId: string;
+  title: string;
+  location?: string | null;
+  employmentType: EmploymentType;
+  status: JobStatus;
+  deadline?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  applicationsCount: number;
+  stagesCount?: Record<string, number>;
+}
+
+export interface JobComplianceCheckResult {
+  hasViolations: boolean;
+  canPublish: boolean; // false if BLOCK violation found
+  violations: Array<{
+    keyword: string;
+    category: string;
+    severity: 'BLOCK' | 'WARN';
+    reason: string;
+  }>;
+}
+

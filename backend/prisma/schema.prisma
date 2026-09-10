@@ -439,6 +439,7 @@ model JobVacancy {
   salaryMax           Decimal?       @map("salary_max") @db.Decimal(12, 2)
   status              JobStatus      @default(DRAFT)
   deadline            DateTime?
+  screeningQuestionsJson Json?       @map("screening_questions_json")
   createdById         String         @map("created_by_id")
   createdAt           DateTime       @default(now()) @map("created_at")
   updatedAt           DateTime       @updatedAt @map("updated_at")
