@@ -121,6 +121,25 @@ enum GdprRequestStatus {
   REJECTED
 }
 
+enum NotificationChannel {
+  EMAIL
+  IN_APP
+  SMS
+}
+
+enum IntegrationProvider {
+  SMTP_EMAIL
+  GOOGLE_OAUTH
+  LINKEDIN_OAUTH
+  ZOOM_CALENDAR
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  NOT_CONFIGURED
+  ERROR
+}
+
 // -------------------------------------------------------------
 // User & Role Profiles
 // -------------------------------------------------------------
@@ -716,3 +735,73 @@ model GdprRequest {
   @@index([status])
   @@map("gdpr_requests")
 }
+
+// -------------------------------------------------------------
+// System Configuration & Master Data (Epic 4)
+// -------------------------------------------------------------
+model Industry {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  category  String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("industries")
+}
+
+model Location {
+  id              String   @id @default(uuid())
+  city            String
+  state           String?
+  country         String   @default("United States")
+  isRemoteAllowed Boolean  @default(true) @map("is_remote_allowed")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([city, state, country])
+  @@map("locations")
+}
+
+model NotificationTemplate {
+  id            String              @id @default(uuid())
+  name          String
+  code          String              @unique
+  channel       NotificationChannel @default(EMAIL)
+  subject       String
+  body          String              @db.Text
+  variablesJson Json?               @map("variables_json")
+  isActive      Boolean             @default(true) @map("is_active")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+
+  @@map("notification_templates")
+}
+
+model SystemIntegrationSetting {
+  id           String              @id @default(uuid())
+  provider     IntegrationProvider @unique
+  configJson   Json?               @map("config_json")
+  status       IntegrationStatus   @default(NOT_CONFIGURED)
+  lastTestedAt DateTime?           @map("last_tested_at")
+  errorMessage String?             @map("error_message") @db.Text
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  @@map("system_integration_settings")
+}
+
+model FeatureFlag {
+  id                 String   @id @default(uuid())
+  key                String   @unique
+  name               String
+  description        String?  @db.Text
+  enabledTiersJson   Json?    @map("enabled_tiers_json")
+  isGloballyEnabled  Boolean  @default(true) @map("is_globally_enabled")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("feature_flags")
+}
+

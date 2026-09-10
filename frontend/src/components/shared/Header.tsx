@@ -77,6 +77,12 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             >
               Moderation
             </Link>
+            <Link
+              to="/admin/config"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Configuration
+            </Link>
           </nav>
         )}
       </div>

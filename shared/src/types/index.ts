@@ -228,3 +228,90 @@ export interface ModerationStats {
   openGdprRequests: number;
 }
 
+// -------------------------------------------------------------
+// System Configuration & Master Data (Epic 4)
+// -------------------------------------------------------------
+export type NotificationChannel = 'EMAIL' | 'IN_APP' | 'SMS';
+
+export type IntegrationProvider =
+  | 'SMTP_EMAIL'
+  | 'GOOGLE_OAUTH'
+  | 'LINKEDIN_OAUTH'
+  | 'ZOOM_CALENDAR';
+
+export type IntegrationStatus = 'CONNECTED' | 'NOT_CONFIGURED' | 'ERROR';
+
+export interface SkillTaxonomyItem {
+  id: string;
+  name: string;
+  category?: string | null;
+  aliasesJson?: string[] | null;
+  createdAt?: string;
+  _count?: {
+    applicantSkills?: number;
+    jobRequiredSkills?: number;
+  };
+}
+
+export interface IndustryItem {
+  id: string;
+  name: string;
+  category?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocationItem {
+  id: string;
+  city: string;
+  state?: string | null;
+  country: string;
+  isRemoteAllowed: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NotificationTemplateItem {
+  id: string;
+  name: string;
+  code: string;
+  channel: NotificationChannel;
+  subject: string;
+  body: string;
+  variablesJson?: string[] | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SystemIntegrationSettingItem {
+  id: string;
+  provider: IntegrationProvider;
+  configJson?: Record<string, unknown> | null;
+  status: IntegrationStatus;
+  lastTestedAt?: string | null;
+  errorMessage?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FeatureFlagItem {
+  id: string;
+  key: string;
+  name: string;
+  description?: string | null;
+  enabledTiersJson?: PlanTier[] | null;
+  isGloballyEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AtsWeightPreset {
+  id: string;
+  name: string;
+  description: string;
+  weights: ScoreWeightConfig;
+}
+

@@ -15,6 +15,7 @@ import applicationPipelineRouter from './modules/application-pipeline/applicatio
 import notificationsRouter from './modules/notifications/notifications.routes';
 import adminRouter from './modules/admin/admin.routes';
 import moderationRouter from './modules/moderation/moderation.routes';
+import systemConfigRouter from './modules/system-config/system-config.routes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -59,6 +60,7 @@ export const createApp = (): Express => {
   app.use('/api/v1/notifications', notificationsRouter);
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/admin/moderation', moderationRouter);
+  app.use('/api/v1/admin/config', systemConfigRouter);
 
   // 404 Handler
   app.use((req: Request, _res: Response, next: NextFunction) => {

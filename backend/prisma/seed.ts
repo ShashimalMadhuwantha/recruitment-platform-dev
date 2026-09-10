@@ -183,6 +183,175 @@ async function main() {
   }
   console.log(`✅ Seeded ${initialBannedKeywords.length} moderation keywords`);
 
+  // 7. Seed Standard Industries & Locations
+  const standardIndustries = [
+    { name: 'Information Technology & Services', category: 'Technology' },
+    { name: 'Financial Services & Banking', category: 'Finance' },
+    { name: 'Healthcare & Life Sciences', category: 'Healthcare' },
+    { name: 'E-commerce & Retail', category: 'Retail' },
+    { name: 'Education & EdTech', category: 'Education' },
+    { name: 'Manufacturing & Engineering', category: 'Engineering' },
+  ];
+
+  for (const industry of standardIndustries) {
+    await prisma.industry.upsert({
+      where: { name: industry.name },
+      update: {},
+      create: industry,
+    });
+  }
+  console.log(`✅ Seeded ${standardIndustries.length} industries`);
+
+  const standardLocations = [
+    { city: 'San Francisco', state: 'CA', country: 'United States', isRemoteAllowed: true },
+    { city: 'New York', state: 'NY', country: 'United States', isRemoteAllowed: true },
+    { city: 'London', state: 'Greater London', country: 'United Kingdom', isRemoteAllowed: true },
+    { city: 'Colombo', state: 'Western Province', country: 'Sri Lanka', isRemoteAllowed: true },
+    { city: 'Singapore', state: 'Central', country: 'Singapore', isRemoteAllowed: true },
+    { city: 'Berlin', state: 'Berlin', country: 'Germany', isRemoteAllowed: true },
+  ];
+
+  for (const loc of standardLocations) {
+    await prisma.location.upsert({
+      where: {
+        city_state_country: {
+          city: loc.city,
+          state: loc.state,
+          country: loc.country,
+        },
+      },
+      update: {},
+      create: loc,
+    });
+  }
+  console.log(`✅ Seeded ${standardLocations.length} standard locations`);
+
+  // 8. Seed Notification Templates
+  const notificationTemplates = [
+    {
+      name: 'Candidate Application Received',
+      code: 'APP_RECEIVED',
+      channel: 'EMAIL' as const,
+      subject: 'Application Received: {{job_title}} at {{company_name}}',
+      body: 'Hi {{candidate_name}},\n\nThank you for applying for {{job_title}} at {{company_name}}. We have received your application and resume. Our hiring team will review your qualifications and reach out with next steps.\n\nBest regards,\nThe {{company_name}} Recruitment Team',
+      variablesJson: ['candidate_name', 'job_title', 'company_name', 'portal_url'],
+    },
+    {
+      name: 'Application Status Stage Update',
+      code: 'APP_STAGE_UPDATE',
+      channel: 'EMAIL' as const,
+      subject: 'Update on your application for {{job_title}}',
+      body: 'Dear {{candidate_name}},\n\nYour application status for {{job_title}} at {{company_name}} has been updated to: {{stage_name}}.\n\nYou can track your application status anytime at {{portal_url}}.\n\nSincerely,\n{{company_name}} Hiring Team',
+      variablesJson: ['candidate_name', 'job_title', 'company_name', 'stage_name', 'portal_url'],
+    },
+    {
+      name: 'Interview Invitation',
+      code: 'INTERVIEW_INVITE',
+      channel: 'EMAIL' as const,
+      subject: 'Interview Invitation: {{job_title}} with {{company_name}}',
+      body: 'Hi {{candidate_name}},\n\nWe are pleased to invite you for an interview for the {{job_title}} position.\n\nInterview Details:\nDate & Time: {{interview_time}}\nType: {{interview_type}}\nLink / Location: {{meeting_link}}\n\nPlease let us know if you have any questions.\n\nBest regards,\n{{recruiter_name}}',
+      variablesJson: ['candidate_name', 'job_title', 'company_name', 'interview_time', 'interview_type', 'meeting_link', 'recruiter_name'],
+    },
+    {
+      name: 'Company Account Approved Notice',
+      code: 'COMPANY_APPROVED',
+      channel: 'EMAIL' as const,
+      subject: 'Welcome to ATS Platform - Your Company Account is Approved!',
+      body: 'Hello {{admin_name}},\n\nCongratulations! Your company account for {{company_name}} has been approved by the platform administrators.\n\nYou can now log in, post jobs, configure hiring workflows, and screen applicants.\n\nLogin URL: {{portal_url}}/login\n\nWelcome aboard,\nThe Platform Admin Team',
+      variablesJson: ['admin_name', 'company_name', 'portal_url'],
+    },
+  ];
+
+  for (const template of notificationTemplates) {
+    await prisma.notificationTemplate.upsert({
+      where: { code: template.code },
+      update: {},
+      create: template,
+    });
+  }
+  console.log(`✅ Seeded ${notificationTemplates.length} notification templates`);
+
+  // 9. Seed Integration Settings Placeholders
+  const integrationSettings = [
+    {
+      provider: 'SMTP_EMAIL' as const,
+      configJson: { host: 'smtp.sendgrid.net', port: 587, fromEmail: 'no-reply@atsplatform.local', fromName: 'Recruiting Platform ATS' },
+      status: 'CONNECTED' as const,
+    },
+    {
+      provider: 'GOOGLE_OAUTH' as const,
+      configJson: { clientId: 'google-client-id-placeholder.apps.googleusercontent.com', allowedDomains: [] },
+      status: 'NOT_CONFIGURED' as const,
+    },
+    {
+      provider: 'LINKEDIN_OAUTH' as const,
+      configJson: { clientId: 'linkedin-client-id-placeholder' },
+      status: 'NOT_CONFIGURED' as const,
+    },
+    {
+      provider: 'ZOOM_CALENDAR' as const,
+      configJson: { zoomApiKey: 'zoom-key-placeholder', calendarSyncEnabled: false },
+      status: 'NOT_CONFIGURED' as const,
+    },
+  ];
+
+  for (const integration of integrationSettings) {
+    await prisma.systemIntegrationSetting.upsert({
+      where: { provider: integration.provider },
+      update: {},
+      create: integration,
+    });
+  }
+  console.log(`✅ Seeded ${integrationSettings.length} integration settings`);
+
+  // 10. Seed System Feature Flags & Plan Tier Matrix
+  const featureFlags = [
+    {
+      key: 'ai_ats_scoring',
+      name: 'AI-Powered ATS Match Scoring',
+      description: 'Enables semantic parsing, skill extraction, and candidate fit matching',
+      isGloballyEnabled: true,
+      enabledTiersJson: ['PRO', 'ENTERPRISE'],
+    },
+    {
+      key: 'multi_tenant_custom_domain',
+      name: 'Company Custom Domain & White-labeling',
+      description: 'Allows enterprise employers to host branded career sites on custom subdomains',
+      isGloballyEnabled: true,
+      enabledTiersJson: ['ENTERPRISE'],
+    },
+    {
+      key: 'advanced_analytics_export',
+      name: 'Advanced Pipeline Analytics & CSV/PDF Export',
+      description: 'Provides in-depth time-to-hire metrics, stage dropoff stats, and data exports',
+      isGloballyEnabled: true,
+      enabledTiersJson: ['PRO', 'ENTERPRISE'],
+    },
+    {
+      key: 'direct_candidate_messaging',
+      name: 'In-app Direct Messaging with Applicants',
+      description: 'Facilitates real-time conversation between recruiters and candidates',
+      isGloballyEnabled: true,
+      enabledTiersJson: ['FREE', 'PRO', 'ENTERPRISE'],
+    },
+    {
+      key: 'semantic_cv_search',
+      name: 'Vector Semantic CV Talent Pool Search',
+      description: 'Search entire applicant resume repository using natural language queries',
+      isGloballyEnabled: false,
+      enabledTiersJson: ['ENTERPRISE'],
+    },
+  ];
+
+  for (const flag of featureFlags) {
+    await prisma.featureFlag.upsert({
+      where: { key: flag.key },
+      update: {},
+      create: flag,
+    });
+  }
+  console.log(`✅ Seeded ${featureFlags.length} system feature flags`);
+
   console.log('🎉 Database seeding completed successfully.');
 }
 

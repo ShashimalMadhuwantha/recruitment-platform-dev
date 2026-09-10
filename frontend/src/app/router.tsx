@@ -14,6 +14,7 @@ import AdminCompaniesPage from '../pages/admin/AdminCompaniesPage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
 import AdminPlansPage from '../pages/admin/AdminPlansPage';
 import AdminModerationPage from '../pages/admin/AdminModerationPage';
+import { AdminConfigPage } from '../pages/admin/AdminConfigPage';
 import Header from '../components/shared/Header';
 import ImpersonationBanner from '../components/shared/ImpersonationBanner';
 import { ProtectedRoute } from '../components/shared/ProtectedRoute';
@@ -119,6 +120,14 @@ export const AppRouter: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                 <AdminModerationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/config"
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <AdminConfigPage />
               </ProtectedRoute>
             }
           />
