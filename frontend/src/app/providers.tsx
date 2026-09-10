@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthenticatedUser } from '@recruitment-platform/shared';
+import { AuthUser } from '../features/auth/types';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,59 +13,94 @@ const queryClient = new QueryClient({
 });
 
 interface AuthContextType {
-  user: AuthenticatedUser | null;
-  token: string | null;
-  login: (token: string, user: AuthenticatedUser) => void;
-  logout: () => void;
+  user: AuthUser | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
+  login: (accessToken: string, refreshToken: string, user: AuthUser) => void;
+  logout: () => void;
+  updateUser: (user: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  token: null,
+  accessToken: null,
+  refreshToken: null,
+  isAuthenticated: false,
+  isLoading: true,
   login: () => {},
   logout: () => {},
-  isLoading: true,
+  updateUser: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthenticatedUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('auth_token');
+    const savedAccess = localStorage.getItem('access_token');
+    const savedRefresh = localStorage.getItem('refresh_token');
     const savedUser = localStorage.getItem('auth_user');
-    if (savedToken && savedUser) {
+
+    if (savedAccess && savedUser) {
       try {
-        setToken(savedToken);
+        setAccessToken(savedAccess);
+        setRefreshToken(savedRefresh);
         setUser(JSON.parse(savedUser));
       } catch (e) {
         console.error('Failed to parse cached user', e);
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('auth_user');
       }
     }
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, newUser: AuthenticatedUser) => {
-    setToken(newToken);
+  const login = (newAccessToken: string, newRefreshToken: string, newUser: AuthUser) => {
+    setAccessToken(newAccessToken);
+    setRefreshToken(newRefreshToken);
     setUser(newUser);
-    localStorage.setItem('auth_token', newToken);
+    localStorage.setItem('access_token', newAccessToken);
+    localStorage.setItem('refresh_token', newRefreshToken);
     localStorage.setItem('auth_user', JSON.stringify(newUser));
   };
 
   const logout = () => {
-    setToken(null);
+    setAccessToken(null);
+    setRefreshToken(null);
     setUser(null);
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('auth_user');
+  };
+
+  const updateUser = (fields: Partial<AuthUser>) => {
+    if (!user) return;
+    const updated = { ...user, ...fields };
+    setUser(updated);
+    localStorage.setItem('auth_user', JSON.stringify(updated));
   };
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+      <AuthContext.Provider
+        value={{
+          user,
+          accessToken,
+          refreshToken,
+          isAuthenticated: !!accessToken && !!user,
+          isLoading,
+          login,
+          logout,
+          updateUser,
+        }}
+      >
         {children}
       </AuthContext.Provider>
     </QueryClientProvider>
