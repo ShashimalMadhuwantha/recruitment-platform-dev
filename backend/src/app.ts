@@ -14,6 +14,7 @@ import jobVacancyRouter from './modules/job-vacancy/job-vacancy.routes';
 import applicationPipelineRouter from './modules/application-pipeline/application-pipeline.routes';
 import notificationsRouter from './modules/notifications/notifications.routes';
 import adminRouter from './modules/admin/admin.routes';
+import moderationRouter from './modules/moderation/moderation.routes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -57,6 +58,7 @@ export const createApp = (): Express => {
   app.use('/api/v1/application-pipelines', applicationPipelineRouter);
   app.use('/api/v1/notifications', notificationsRouter);
   app.use('/api/v1/admin', adminRouter);
+  app.use('/api/v1/admin/moderation', moderationRouter);
 
   // 404 Handler
   app.use((req: Request, _res: Response, next: NextFunction) => {

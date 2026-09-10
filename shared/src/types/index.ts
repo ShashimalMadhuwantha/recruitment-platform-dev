@@ -145,4 +145,86 @@ export interface AuditLogEntry {
   ipAddress?: string | null;
   userAgent?: string | null;
   createdAt: string;
+  actor?: {
+    id: string;
+    email: string;
+    role: UserRole;
+  } | null;
 }
+
+// -------------------------------------------------------------
+// Moderation & Compliance Types
+// -------------------------------------------------------------
+export type ReportTargetType = 'JOB_POSTING' | 'APPLICANT_PROFILE' | 'CV';
+export type ReportStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED';
+
+export interface ContentReport {
+  id: string;
+  reporterId?: string | null;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: string;
+  description?: string | null;
+  status: ReportStatus;
+  resolutionAction?: string | null;
+  resolutionNotes?: string | null;
+  resolvedById?: string | null;
+  resolvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  reporter?: {
+    id: string;
+    email: string;
+    role: UserRole;
+  } | null;
+  targetDetails?: {
+    title?: string;
+    name?: string;
+    email?: string;
+    companyName?: string;
+    status?: string;
+    description?: string;
+  } | null;
+}
+
+export type BannedKeywordCategory = 'DISCRIMINATION' | 'SPAM' | 'OFFENSIVE' | 'MISLEADING';
+
+export interface BannedKeyword {
+  id: string;
+  keyword: string;
+  category: BannedKeywordCategory;
+  severity: 'BLOCK' | 'WARN' | string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type GdprRequestType = 'DATA_EXPORT' | 'ERASURE';
+export type GdprRequestStatus = 'SUBMITTED' | 'PROCESSING' | 'COMPLETED' | 'REJECTED';
+
+export interface GdprRequest {
+  id: string;
+  userId: string;
+  requestType: GdprRequestType;
+  status: GdprRequestStatus;
+  slaDeadline: string;
+  detailsJson?: Record<string, unknown> | null;
+  rejectionReason?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    email: string;
+    role: UserRole;
+    status: UserStatus;
+  };
+}
+
+export interface ModerationStats {
+  pendingJobReports: number;
+  pendingProfileReports: number;
+  totalBannedKeywords: number;
+  openGdprRequests: number;
+}
+

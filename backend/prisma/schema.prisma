@@ -90,6 +90,37 @@ enum PlanTier {
   ENTERPRISE
 }
 
+enum ReportTargetType {
+  JOB_POSTING
+  APPLICANT_PROFILE
+  CV
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+enum BannedKeywordCategory {
+  DISCRIMINATION
+  SPAM
+  OFFENSIVE
+  MISLEADING
+}
+
+enum GdprRequestType {
+  DATA_EXPORT
+  ERASURE
+}
+
+enum GdprRequestStatus {
+  SUBMITTED
+  PROCESSING
+  COMPLETED
+  REJECTED
+}
+
 // -------------------------------------------------------------
 // User & Role Profiles
 // -------------------------------------------------------------
@@ -120,6 +151,8 @@ model User {
   jobVacanciesCreated JobVacancy[]       @relation("CreatedJobs")
   interviewSchedules  InterviewSchedule[] @relation("InterviewerSchedules")
   interviewFeedbacks  InterviewFeedback[] @relation("InterviewerFeedbacks")
+  reportsCreated      ContentReport[]     @relation("ReportedByUser")
+  gdprRequests        GdprRequest[]
 
   @@map("users")
 }
@@ -625,4 +658,61 @@ model BackgroundJob {
 
   @@index([status, scheduledAt])
   @@map("background_jobs")
+}
+
+// -------------------------------------------------------------
+// Moderation & Compliance
+// -------------------------------------------------------------
+model ContentReport {
+  id               String           @id @default(uuid())
+  reporterId       String?          @map("reporter_id")
+  targetType       ReportTargetType @map("target_type")
+  targetId         String           @map("target_id")
+  reason           String
+  description      String?          @db.Text
+  status           ReportStatus     @default(PENDING)
+  resolutionAction String?          @map("resolution_action")
+  resolutionNotes  String?          @map("resolution_notes") @db.Text
+  resolvedById     String?          @map("resolved_by_id")
+  resolvedAt       DateTime?        @map("resolved_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  reporter User? @relation("ReportedByUser", fields: [reporterId], references: [id], onDelete: SetNull)
+
+  @@index([targetType, targetId])
+  @@index([status])
+  @@map("content_reports")
+}
+
+model BannedKeyword {
+  id        String                @id @default(uuid())
+  keyword   String                @unique
+  category  BannedKeywordCategory @default(DISCRIMINATION)
+  severity  String                @default("BLOCK") // BLOCK, WARN
+  isActive  Boolean               @default(true) @map("is_active")
+  createdAt DateTime              @default(now()) @map("created_at")
+  updatedAt DateTime              @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@map("banned_keywords")
+}
+
+model GdprRequest {
+  id              String            @id @default(uuid())
+  userId          String            @map("user_id")
+  requestType     GdprRequestType   @map("request_type")
+  status          GdprRequestStatus @default(SUBMITTED)
+  slaDeadline     DateTime          @map("sla_deadline")
+  detailsJson     Json?             @map("details_json")
+  rejectionReason String?           @map("rejection_reason") @db.Text
+  completedAt     DateTime?         @map("completed_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("gdpr_requests")
 }

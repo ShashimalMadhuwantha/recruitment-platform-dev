@@ -162,6 +162,27 @@ async function main() {
   }
   console.log(`✅ Seeded ${defaultPlans.length} default subscription plans`);
 
+  // 6. Seed Prohibited / Discriminatory Keywords Dictionary
+  const initialBannedKeywords = [
+    { keyword: 'recent graduate only', category: 'DISCRIMINATION' as const, severity: 'BLOCK' },
+    { keyword: 'young and energetic', category: 'DISCRIMINATION' as const, severity: 'BLOCK' },
+    { keyword: 'native english speaker only', category: 'DISCRIMINATION' as const, severity: 'BLOCK' },
+    { keyword: 'must provide photo with age', category: 'DISCRIMINATION' as const, severity: 'BLOCK' },
+    { keyword: 'single female preferred', category: 'DISCRIMINATION' as const, severity: 'BLOCK' },
+    { keyword: 'get rich quick', category: 'SPAM' as const, severity: 'BLOCK' },
+    { keyword: 'wire transfer required before start', category: 'SPAM' as const, severity: 'BLOCK' },
+    { keyword: 'unpaid mandatory 60hr trial', category: 'MISLEADING' as const, severity: 'WARN' },
+  ];
+
+  for (const item of initialBannedKeywords) {
+    await prisma.bannedKeyword.upsert({
+      where: { keyword: item.keyword },
+      update: {},
+      create: item,
+    });
+  }
+  console.log(`✅ Seeded ${initialBannedKeywords.length} moderation keywords`);
+
   console.log('🎉 Database seeding completed successfully.');
 }
 

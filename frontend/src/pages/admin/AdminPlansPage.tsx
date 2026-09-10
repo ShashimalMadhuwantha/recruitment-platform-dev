@@ -93,9 +93,9 @@ export const AdminPlansPage: React.FC = () => {
                         <div className="flex justify-between items-center py-1 border-b border-border-subtle">
                           <span className="text-text-secondary">Monthly ATS Scans</span>
                           <span className="font-semibold text-text-primary">
-                            {plan.maxAtsScans === 9999
+                            {(plan.maxAtsScans ?? (plan as any).maxAtsScansMonthly) === 9999
                               ? 'Unlimited'
-                              : `${plan.maxAtsScans.toLocaleString()} / mo`}
+                              : `${((plan.maxAtsScans ?? (plan as any).maxAtsScansMonthly) || 0).toLocaleString()} / mo`}
                           </span>
                         </div>
                       </div>
