@@ -41,7 +41,11 @@ export function useOverrideAtsScore() {
   return useMutation({
     mutationFn: ({ applicationId, data }: { applicationId: string; data: OverrideAtsScoreDto }) =>
       atsScoringApi.overrideAtsScore(applicationId, data),
-    onSuccess: (_, variables) => {
+    onSuccess: (updatedScore, variables) => {
+      queryClient.setQueryData(
+        ATS_QUERY_KEYS.applicationScore(variables.applicationId),
+        updatedScore
+      );
       queryClient.invalidateQueries({
         queryKey: ATS_QUERY_KEYS.applicationScore(variables.applicationId),
       });

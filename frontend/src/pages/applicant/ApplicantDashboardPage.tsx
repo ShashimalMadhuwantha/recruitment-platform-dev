@@ -1,31 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { ScoreBadge } from '../../components/ui/ScoreBadge';
 import { StatusPill } from '../../components/ui/StatusPill';
 import { Button } from '../../components/ui/Button';
 import { useApplicantProfile } from '../../features/applicant-profile/hooks';
+import { PreApplyMatchPreviewDrawer } from '../../features/ats-scoring/components/PreApplyMatchPreviewDrawer';
 
 export const ApplicantDashboardPage: React.FC = () => {
   const { data: profile } = useApplicantProfile();
   const completenessScore = profile?.completeness?.score ?? 85;
+  const [previewJobId, setPreviewJobId] = useState<string | null>(null);
 
   const applications = [
     {
-      id: '1',
-      title: 'Senior TypeScript Engineer',
-      company: 'TechCorp Solutions',
-      status: 'INTERVIEW',
-      score: 89,
-      appliedDate: 'Sep 05, 2026',
+      id: 'app-shashimal-1',
+      jobId: '36a383f4-4d3f-48a7-a4bb-f527e951c5ea',
+      title: 'Senior Full-Stack Engineer (React / Node.js)',
+      company: 'Nibm',
+      status: 'SCREENING',
+      score: 88.5,
+      appliedDate: 'Sep 10, 2026',
     },
     {
-      id: '2',
+      id: 'app-shashimal-2',
+      jobId: '77b21a88-251c-4b68-b80c-99d9804b32c0',
       title: 'Full Stack React / Node Developer',
-      company: 'Innovate Labs',
-      status: 'SCREENING',
-      score: 76,
-      appliedDate: 'Sep 08, 2026',
+      company: 'Nibm',
+      status: 'APPLIED',
+      score: 84.0,
+      appliedDate: 'Sep 10, 2026',
     },
   ];
 
@@ -72,13 +76,21 @@ export const ApplicantDashboardPage: React.FC = () => {
       </div>
 
       <Card>
-        <h2 className="text-base font-semibold text-text-primary mb-4">My Applications</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-text-primary">My Applications</h2>
+          <span className="text-xs text-text-muted">Click any application to view ATS Match Breakdown</span>
+        </div>
         <div className="divide-y divide-border-default">
           {applications.map((app) => (
-            <div key={app.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div
+              key={app.id}
+              onClick={() => setPreviewJobId(app.jobId)}
+              className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-surface-muted/40 px-2 rounded-lg transition-colors"
+            >
               <div>
-                <h3 className="text-sm font-semibold text-text-primary">{app.title}</h3>
+                <h3 className="text-sm font-semibold text-text-primary hover:text-brand-600">{app.title}</h3>
                 <p className="text-xs text-text-secondary">{app.company} • Applied on {app.appliedDate}</p>
+                <p className="text-[11px] text-brand-600 font-medium mt-1">View ATS Match Breakdown & Skill Alignment →</p>
               </div>
               <div className="flex items-center gap-4">
                 <ScoreBadge score={app.score} size="sm" />
@@ -88,8 +100,18 @@ export const ApplicantDashboardPage: React.FC = () => {
           ))}
         </div>
       </Card>
+
+      {/* Epic 7 ATS Pre-Apply Match Preview Drawer */}
+      {previewJobId && (
+        <PreApplyMatchPreviewDrawer
+          jobId={previewJobId}
+          isOpen={Boolean(previewJobId)}
+          onClose={() => setPreviewJobId(null)}
+        />
+      )}
     </div>
   );
 };
 
 export default ApplicantDashboardPage;
+
