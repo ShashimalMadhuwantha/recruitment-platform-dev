@@ -98,7 +98,9 @@ recruitment-platform/
 │
 ├── docs/
 │   ├── Recruitment_Platform_SRS.md
-│   └── Epic_Backlog.md
+│   ├── Epic_Backlog.md
+│   └── epics/                       # Per-epic summary documents (e.g. epic-00.md, epic-01.md)
+│       └── epic-00.md
 │
 ├── .github/workflows/               # CI pipeline
 ├── nginx/                           # Nginx site config
@@ -193,3 +195,62 @@ Each sub-score function is pure where possible — takes structured applicant/jo
 - ESLint + Prettier configured once at the repo root, enforced in CI (fail the build on lint errors, not just warnings).
 - Prefer named exports over default exports for anything that will be imported in multiple places (easier refactors, clearer grep).
 - Keep controllers thin (parse request → call service → shape response); business logic always lives in the service layer where it can be unit tested without an HTTP layer.
+
+## 12. Epic Documentation Standard (`docs/epics/epic-<number>.md`)
+
+For every epic worked on or completed, create/maintain a dedicated markdown summary file at `docs/epics/epic-<number>.md` (e.g. `docs/epics/epic-00.md`, `docs/epics/epic-01.md`).
+
+Each epic summary must document:
+1. **Epic Metadata:** Epic Number, Epic Title, Target Branch (`epic/<number>-<slug>`), Completion Date/Status.
+2. **Tasks Delivered:** Table matching `Epic_Backlog.md` with task names, purpose, feature branch, and key files modified/created.
+3. **Architecture & Technical Decisions:** Database tables/migrations added, API endpoints exposed, frontend components/pages created.
+4. **Verification & Test Suite:** Commands executed, unit/integration test results, typecheck results.
+5. **Next Steps:** Immediate next tasks or handoff to the next epic.
+
+## 13. Git Workflow, Commit Standards & Push Conventions
+
+Follow this git workflow strictly for every task and epic:
+
+### Branching Hierarchy
+- **Base branch:** `develop` (all work integrates here, production releases cut to `main`).
+- **Epic integration branch:** `epic/<epic-number>-<epic-slug>` (e.g. `epic/00-project-setup`, `epic/01-auth-access-control`).
+- **Task/Feature branch:** `feature/<epic-number>-<task-slug>` (e.g. `feature/00-monorepo-init`, `feature/01-email-auth`).
+
+### Commit Message Standards (Conventional Commits)
+Use structured commit messages in imperative present tense:
+```text
+<type>(<scope>): <short summary>
+
+[optional body explaining context or breaking changes]
+```
+
+- **Allowed Types:**
+  - `feat`: A new user-facing or API feature (e.g. `feat(auth): add jwt middleware and refresh tokens`)
+  - `fix`: A bug fix (e.g. `fix(ats-scoring): correct skills weight normalization`)
+  - `docs`: Documentation changes (e.g. `docs(epic-00): add epic completion summary`)
+  - `style`: Frontend styling, Tailwind tokens, CSS layout tweaks
+  - `refactor`: Code restructures that neither fix a bug nor add a feature
+  - `test`: Adding or updating test suites (e.g. `test(backend): add ats scoring unit tests`)
+  - `chore`: Repo maintenance, dependencies, migrations, seed updates (e.g. `chore(db): add initial prisma schema and seed`)
+
+### Staging, Committing & Pushing Steps
+1. **Pre-commit verification:** Always run validation locally before committing:
+   ```bash
+   npm run typecheck
+   npm run test
+   ```
+2. **Stage files:** Stage specific, related changes (never commit untracked `.env` or temporary files):
+   ```bash
+   git add <file1> <file2> ...
+   # or git add .
+   ```
+3. **Commit with standard message:**
+   ```bash
+   git commit -m "feat(auth): add email registration with bcrypt and jwt"
+   ```
+4. **Push branch to origin:**
+   ```bash
+   git push -u origin <current-branch-name>
+   ```
+5. **Epic completion:** When all tasks for an epic are finished, ensure `docs/epics/epic-<number>.md` is committed and pushed to `origin epic/<epic-number>-<epic-slug>` before merging to `develop`.
+

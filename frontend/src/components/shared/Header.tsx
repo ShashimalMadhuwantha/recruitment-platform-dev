@@ -1,0 +1,76 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { UserRole } from '@recruitment-platform/shared';
+import { Button } from '../ui/Button';
+
+export interface HeaderProps {
+  userRole?: UserRole;
+  userEmail?: string;
+  onLogout?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout }) => {
+  const navigate = useNavigate();
+
+  const getRoleAccent = (role?: UserRole) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+        return 'bg-role-admin text-white';
+      case 'RECRUITER':
+        return 'bg-role-recruiter text-white';
+      case 'APPLICANT':
+        return 'bg-role-applicant text-white';
+      default:
+        return 'bg-brand-600 text-white';
+    }
+  };
+
+  return (
+    <header className="h-16 bg-surface border-b border-border-default px-6 flex items-center justify-between sticky top-0 z-40">
+      <div className="flex items-center gap-6">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-lg">
+            A
+          </div>
+          <span className="font-semibold text-lg text-brand-900 tracking-tight">
+            ATS Platform
+          </span>
+        </Link>
+
+        {userRole && (
+          <span
+            className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${getRoleAccent(userRole)}`}
+          >
+            {userRole.replace('_', ' ')}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        {userEmail ? (
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-text-secondary">{userEmail}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onLogout || (() => navigate('/auth/login'))}
+            >
+              Sign Out
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/auth/login')}>
+              Sign In
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => navigate('/auth/register')}>
+              Get Started
+            </Button>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+
+export default Header;
