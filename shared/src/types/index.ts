@@ -253,6 +253,8 @@ export interface SkillTaxonomyItem {
   };
 }
 
+export type SkillMaster = SkillTaxonomyItem;
+
 export interface IndustryItem {
   id: string;
   name: string;
@@ -418,4 +420,213 @@ export interface JobComplianceCheckResult {
     reason: string;
   }>;
 }
+
+// -------------------------------------------------------------
+// Applicant Profile & Resume Management (Epic 6)
+// -------------------------------------------------------------
+export type ProfileVisibility = 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS';
+
+export interface ProfileVisibilitySettings {
+  visibility: ProfileVisibility;
+  hideFromCompanies?: string[];
+  allowRecruiterContact?: boolean;
+}
+
+export interface ProfileCompletenessBreakdown {
+  score: number; // 0 to 100
+  personalInfo: boolean; // 20%
+  workExperience: boolean; // 25%
+  education: boolean; // 20%
+  skills: boolean; // 20%
+  resumeAttached: boolean; // 15%
+  suggestions: string[];
+}
+
+export interface ApplicantSkillDto {
+  id: string;
+  applicantId: string;
+  skillId: string;
+  proficiency: number; // 1 to 5
+  yearsExperience?: number | null;
+  skill?: {
+    id: string;
+    name: string;
+    category?: string | null;
+  };
+}
+
+export interface EducationDto {
+  id: string;
+  applicantId: string;
+  institution: string;
+  degree: string;
+  fieldOfStudy?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  gpa?: number | string | null;
+  createdAt?: string;
+}
+
+export interface WorkExperienceDto {
+  id: string;
+  applicantId: string;
+  companyName: string;
+  title: string;
+  startDate: string;
+  endDate?: string | null;
+  isCurrent: boolean;
+  description?: string | null;
+  skillsUsedJson?: string[] | null;
+  createdAt?: string;
+}
+
+export interface AchievementDto {
+  id: string;
+  applicantId: string;
+  title: string;
+  type?: string | null;
+  description?: string | null;
+  date?: string | null;
+  issuer?: string | null;
+  createdAt?: string;
+}
+
+export interface CertificationDto {
+  id: string;
+  applicantId: string;
+  name: string;
+  issuer: string;
+  issueDate?: string | null;
+  expiryDate?: string | null;
+  credentialUrl?: string | null;
+  createdAt?: string;
+}
+
+export interface PortfolioDto {
+  id: string;
+  applicantId: string;
+  type: string;
+  url: string;
+  fileRef?: string | null;
+  createdAt?: string;
+}
+
+export interface ParsedResumeData {
+  summary?: string;
+  contactInfo: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+  };
+  detectedSkills: string[];
+  workExperience: Array<{
+    title: string;
+    company: string;
+    startDate?: string;
+    endDate?: string;
+    isCurrent?: boolean;
+    description?: string;
+  }>;
+  education: Array<{
+    degree: string;
+    institution: string;
+    fieldOfStudy?: string;
+    startDate?: string;
+    endDate?: string;
+  }>;
+  certifications?: string[];
+  rawTextPreview?: string;
+}
+
+export interface CVDto {
+  id: string;
+  applicantId: string;
+  fileRef: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  parsedText?: string | null;
+  parsedJson?: ParsedResumeData | null;
+  versionLabel?: string | null;
+  isPrimary: boolean;
+  parsingStatus?: string | null;
+  createdAt: string;
+}
+
+export interface ApplicantProfileDto {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  headline?: string | null;
+  summary?: string | null;
+  location?: string | null;
+  visibilitySettings?: ProfileVisibilitySettings | null;
+  completeness: ProfileCompletenessBreakdown;
+  user?: {
+    id: string;
+    email: string;
+    role: UserRole;
+  };
+  applicantSkills: ApplicantSkillDto[];
+  educations: EducationDto[];
+  workExperiences: WorkExperienceDto[];
+  achievements: AchievementDto[];
+  certifications: CertificationDto[];
+  portfolios: PortfolioDto[];
+  cvs: CVDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateApplicantProfileDto {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  headline?: string | null;
+  summary?: string | null;
+  location?: string | null;
+  visibilitySettings?: ProfileVisibilitySettings | null;
+}
+
+export interface AnonymizedProfileDto {
+  applicantId: string;
+  candidatePseudonym: string;
+  headline?: string | null;
+  summary?: string | null;
+  generalLocation?: string | null;
+  skills: Array<{
+    name: string;
+    category?: string | null;
+    proficiency: number;
+    yearsExperience?: number | null;
+  }>;
+  anonymizedExperiences: Array<{
+    id: string;
+    title: string;
+    generalizedCompany: string;
+    startDate: string;
+    endDate?: string | null;
+    isCurrent: boolean;
+    description?: string | null;
+    skillsUsed: string[];
+  }>;
+  anonymizedEducations: Array<{
+    id: string;
+    degree: string;
+    fieldOfStudy?: string | null;
+    institutionTier: string;
+    endDate?: string | null;
+  }>;
+  certifications: Array<{
+    name: string;
+    issuer: string;
+    issueDate?: string | null;
+  }>;
+  completenessScore: number;
+  blindRecruitmentNotice: string;
+}
+
 

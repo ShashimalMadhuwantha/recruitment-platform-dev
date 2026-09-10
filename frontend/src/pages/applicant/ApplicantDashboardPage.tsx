@@ -1,10 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { ScoreBadge } from '../../components/ui/ScoreBadge';
 import { StatusPill } from '../../components/ui/StatusPill';
 import { Button } from '../../components/ui/Button';
+import { useApplicantProfile } from '../../features/applicant-profile/hooks';
 
 export const ApplicantDashboardPage: React.FC = () => {
+  const { data: profile } = useApplicantProfile();
+  const completenessScore = profile?.completeness?.score ?? 85;
+
   const applications = [
     {
       id: '1',
@@ -31,19 +36,31 @@ export const ApplicantDashboardPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-brand-900">Applicant Dashboard</h1>
           <p className="text-xs text-text-secondary mt-1">Track your job applications and ATS match scores</p>
         </div>
-        <Button variant="primary" size="sm">
-          Browse Open Vacancies
-        </Button>
+        <div className="flex items-center gap-3">
+          <Link to="/applicant/profile">
+            <Button variant="secondary" size="sm">
+              Edit Profile
+            </Button>
+          </Link>
+          <Link to="/applicant/profile?tab=resume">
+            <Button variant="primary" size="sm">
+              + Upload Resume
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-text-secondary">Profile Completeness</p>
-            <p className="text-2xl font-bold text-brand-900 mt-1">90%</p>
-          </div>
-          <ScoreBadge score={90} size="sm" showLabel={false} />
-        </Card>
+        <Link to="/applicant/profile">
+          <Card className="flex items-center justify-between hover:border-brand-600 transition-colors cursor-pointer">
+            <div>
+              <p className="text-xs text-text-secondary">Profile Completeness</p>
+              <p className="text-2xl font-bold text-brand-900 mt-1">{completenessScore}%</p>
+              <span className="text-[11px] text-brand-600 font-medium">Update profile →</span>
+            </div>
+            <ScoreBadge score={completenessScore} size="sm" showLabel={false} />
+          </Card>
+        </Link>
         <Card>
           <p className="text-xs text-text-secondary">Active Applications</p>
           <p className="text-2xl font-bold text-brand-900 mt-1">2</p>

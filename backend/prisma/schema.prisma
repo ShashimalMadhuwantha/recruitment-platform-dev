@@ -414,9 +414,10 @@ model CV {
   mimeType     String   @map("mime_type")
   parsedText   String?  @map("parsed_text") @db.LongText
   parsedJson   Json?    @map("parsed_json")
-  versionLabel String?  @default("v1") @map("version_label")
-  isPrimary    Boolean  @default(false) @map("is_primary")
-  createdAt    DateTime @default(now()) @map("created_at")
+  versionLabel  String?  @default("v1") @map("version_label")
+  isPrimary     Boolean  @default(false) @map("is_primary")
+  parsingStatus String?  @default("COMPLETED") @map("parsing_status")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   applicant    ApplicantProfile @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applications Application[]

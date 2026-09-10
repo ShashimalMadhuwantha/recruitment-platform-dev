@@ -108,6 +108,29 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             </Link>
           </nav>
         )}
+
+        {userRole === 'APPLICANT' && (
+          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+            <Link
+              to="/applicant/dashboard"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/applicant/profile"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              My Profile
+            </Link>
+            <Link
+              to="/applicant/profile?tab=resume"
+              className="px-3 py-1.5 rounded-md text-brand-600 hover:text-brand-700 hover:bg-brand-50 font-semibold transition-colors"
+            >
+              Resume / CV
+            </Link>
+          </nav>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
