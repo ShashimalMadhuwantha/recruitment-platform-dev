@@ -5,10 +5,19 @@ import { ScoreBadge } from '../ui/ScoreBadge';
 
 export interface ScoreBreakdownProps {
   breakdown: AtsScoreBreakdown;
+  manualOverrideScore?: number | null;
+  overrideReason?: string | null;
   className?: string;
 }
 
-export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({ breakdown, className }) => {
+export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({
+  breakdown,
+  manualOverrideScore,
+  overrideReason,
+  className,
+}) => {
+  const effectiveScore = manualOverrideScore ?? breakdown.overallScore;
+
   const subScores = [
     { label: 'Skills Match', item: breakdown.skillsMatch, description: 'Matched vs required skills' },
     { label: 'Experience Match', item: breakdown.experienceMatch, description: 'Years & relevance' },
@@ -19,17 +28,32 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({ breakdown, class
 
   return (
     <Card className={className}>
+      {/* Override Banner */}
+      {manualOverrideScore !== null && manualOverrideScore !== undefined && (
+        <div className="mb-4 p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning text-xs space-y-0.5">
+          <div className="flex items-center justify-between font-semibold">
+            <span>⚡ Manual Override Active</span>
+            <span>Calibrated Score: {manualOverrideScore}%</span>
+          </div>
+          {overrideReason && (
+            <p className="text-text-primary text-[11px]">
+              <span className="text-text-secondary font-medium">Reason:</span> {overrideReason}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-border-default">
         <div>
           <h3 className="text-lg font-semibold text-text-primary">ATS Score Breakdown</h3>
           <p className="text-xs text-text-secondary mt-0.5">
-            Deterministic weighted evaluation based on job criteria
+            Deterministic weighted evaluation across 5 dimensions
           </p>
         </div>
-        <ScoreBadge score={breakdown.overallScore} size="lg" />
+        <ScoreBadge score={effectiveScore} size="lg" />
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-5">
         {subScores.map(({ label, item, description }) => (
           <div key={label} className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
@@ -44,7 +68,14 @@ export const ScoreBreakdown: React.FC<ScoreBreakdownProps> = ({ breakdown, class
                 style={{ width: `${item.score}%` }}
               />
             </div>
-            <p className="text-[11px] text-text-secondary">{description}</p>
+            <div className="flex items-center justify-between text-[11px] text-text-secondary">
+              <span>{description}</span>
+              {item.matchedItems && item.matchedItems.length > 0 && (
+                <span className="text-success font-medium">
+                  {item.matchedItems.length} matched
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>

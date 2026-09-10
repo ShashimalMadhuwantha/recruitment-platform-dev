@@ -53,6 +53,7 @@ export const createApp = (): Express => {
 
   // Mount API Domain Routes (v1)
   app.use('/api/v1/auth', authRouter);
+  app.use('/api/v1/ats', atsScoringRouter);
   app.use('/api/v1/ats-scoring', atsScoringRouter);
   app.use('/api/v1/applicant', applicantProfileRouter);
   app.use('/api/v1/applicant-profiles', applicantProfileRouter);

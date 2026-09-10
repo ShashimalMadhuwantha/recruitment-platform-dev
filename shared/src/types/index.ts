@@ -629,4 +629,70 @@ export interface AnonymizedProfileDto {
   blindRecruitmentNotice: string;
 }
 
+// -------------------------------------------------------------
+// ATS Scoring & Pre-Apply Predictions (Epic 7)
+// -------------------------------------------------------------
+export interface PreApplyMatchPreviewDto {
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  overallScore: number;
+  scoreBand: ScoreBand;
+  bandLabel: 'Strong match' | 'Partial match' | 'Weak match';
+  breakdown: AtsScoreBreakdown;
+  missingCriticalSkills: string[];
+  missingNiceToHaveSkills: string[];
+  experienceGap: number; // in years (0 if met/exceeded, negative if gap)
+  educationMet: boolean;
+  recommendations: string[];
+}
+
+export interface OverrideAtsScoreDto {
+  overrideScore: number; // 0 to 100
+  reason: string;
+}
+
+export interface AtsScoreDetailDto {
+  id: string;
+  applicationId: string;
+  overallScore: number;
+  scoreBand: ScoreBand;
+  skillsScore: number;
+  experienceScore: number;
+  educationScore: number;
+  semanticTfidfScore: number;
+  certificationScore: number;
+  breakdown: AtsScoreBreakdown;
+  topMatchingTerms: string[];
+  manualOverrideScore?: number | null;
+  overrideReason?: string | null;
+  overrideById?: string | null;
+  overrideBy?: {
+    id: string;
+    email: string;
+    role: UserRole;
+  } | null;
+  computedAt: string;
+  applicant?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    headline?: string | null;
+  };
+  job?: {
+    id: string;
+    title: string;
+    companyName: string;
+  };
+}
+
+export interface BatchRescoreResultDto {
+  jobId: string;
+  totalApplications: number;
+  updatedScoresCount: number;
+  averageScore: number;
+  durationMs: number;
+}
+
 

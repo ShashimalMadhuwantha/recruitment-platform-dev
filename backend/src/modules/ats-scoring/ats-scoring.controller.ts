@@ -36,7 +36,15 @@ const scorePreviewSchema = z.object({
   }),
 });
 
+const overrideScoreSchema = z.object({
+  overrideScore: z.number().min(0).max(100),
+  reason: z.string().min(5, 'Reason must be at least 5 characters'),
+});
+
 export class AtsScoringController {
+  /**
+   * Pure in-memory preview calculation
+   */
   static async previewScore(req: Request, res: Response, next: NextFunction) {
     try {
       const { applicant, job } = scorePreviewSchema.parse(req.body);
@@ -50,12 +58,89 @@ export class AtsScoringController {
     }
   }
 
+  /**
+   * On-demand candidate pre-apply match preview (FR-ATS-02)
+   */
+  static async getPreApplyMatchPreview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { jobId } = req.params;
+      const applicantUserId = req.user!.id;
+      const preview = await AtsScoringService.previewJobMatch(applicantUserId, jobId);
+      return res.status(200).json({
+        data: preview,
+        error: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Score or re-score a specific application (FR-ATS-01)
+   */
   static async scoreApplication(req: Request, res: Response, next: NextFunction) {
     try {
       const { applicationId } = req.params;
       const breakdown = await AtsScoringService.scoreApplication(applicationId);
       return res.status(200).json({
         data: breakdown,
+        error: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get full persistent ATS Score Detail for an application
+   */
+  static async getApplicationScore(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { applicationId } = req.params;
+      const scoreDetail = await AtsScoringService.getApplicationScore(applicationId);
+      return res.status(200).json({
+        data: scoreDetail,
+        error: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Recruiter manual score override with audit logging (FR-ATS-06, FR-ATS-10)
+   */
+  static async overrideApplicationScore(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { applicationId } = req.params;
+      const { overrideScore, reason } = overrideScoreSchema.parse(req.body);
+      const recruiterUserId = req.user!.id;
+
+      const updatedScore = await AtsScoringService.overrideScore({
+        applicationId,
+        recruiterUserId,
+        overrideScore,
+        reason,
+      });
+
+      return res.status(200).json({
+        data: updatedScore,
+        error: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Batch re-score all applications for a job vacancy (FR-ATS-08)
+   */
+  static async batchRescoreJob(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { jobId } = req.params;
+      const result = await AtsScoringService.batchRescoreJobApplications(jobId);
+      return res.status(200).json({
+        data: result,
         error: null,
       });
     } catch (error) {

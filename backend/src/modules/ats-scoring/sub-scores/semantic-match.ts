@@ -1,30 +1,39 @@
 import natural from 'natural';
 import { ApplicantScoreInput, JobScoreInput, SubScoreCalculationResult } from '../ats-scoring.types';
+import { AntiBiasSanitizer } from '../anti-bias.sanitizer';
 
 const TfIdf = natural.TfIdf;
 
 /**
  * Computes Semantic Text Match (~15% weight) using in-process TF-IDF and Cosine Similarity
- * per SRS §4.3.
+ * per SRS §4.3 & anti-bias demographic signal exclusion (FR-ATS-09).
  */
 export function calculateSemanticMatch(
   applicant: ApplicantScoreInput,
   job: JobScoreInput
 ): SubScoreCalculationResult & { topMatchingTerms: string[] } {
-  const applicantText = applicant.rawCvText || [
-    applicant.skills.map((s) => s.name).join(' '),
-    applicant.pastJobTitles.join(' '),
-    applicant.educationLevel,
-    applicant.fieldOfStudy || '',
-  ].join(' ');
+  // 1. Prepare raw candidate text
+  const rawApplicantText =
+    applicant.rawCvText ||
+    [
+      applicant.skills.map((s) => s.name).join(' '),
+      applicant.pastJobTitles.join(' '),
+      applicant.educationLevel,
+      applicant.fieldOfStudy || '',
+    ].join(' ');
 
-  const jobText = [
+  // 2. Sanitize applicant text using AntiBiasSanitizer (FR-ATS-09)
+  const sanitizedApplicantText = AntiBiasSanitizer.sanitizeText(rawApplicantText);
+
+  // 3. Prepare job description text
+  const rawJobText = [
     job.jobTitle,
     job.jobDescriptionText,
     job.requiredSkills.map((s) => s.name).join(' '),
   ].join(' ');
+  const sanitizedJobText = AntiBiasSanitizer.sanitizeText(rawJobText);
 
-  if (!applicantText.trim() || !jobText.trim()) {
+  if (!sanitizedApplicantText.trim() || !sanitizedJobText.trim()) {
     return {
       score: 0.5,
       topMatchingTerms: [],
@@ -33,19 +42,24 @@ export function calculateSemanticMatch(
   }
 
   const tfidf = new TfIdf();
-  tfidf.addDocument(applicantText);
-  tfidf.addDocument(jobText);
+  tfidf.addDocument(sanitizedApplicantText);
+  tfidf.addDocument(sanitizedJobText);
 
   // Extract applicant and job term vectors
   const applicantTerms: Record<string, number> = {};
   const jobTerms: Record<string, number> = {};
 
   tfidf.listTerms(0).forEach((item) => {
-    applicantTerms[item.term] = item.tfidf;
+    // Ignore short stopwords or numeric tokens
+    if (item.term.length >= 3 && !/^\d+$/.test(item.term)) {
+      applicantTerms[item.term] = item.tfidf;
+    }
   });
 
   tfidf.listTerms(1).forEach((item) => {
-    jobTerms[item.term] = item.tfidf;
+    if (item.term.length >= 3 && !/^\d+$/.test(item.term)) {
+      jobTerms[item.term] = item.tfidf;
+    }
   });
 
   // Calculate Cosine Similarity
@@ -86,6 +100,7 @@ export function calculateSemanticMatch(
     details: {
       rawCosineSimilarity: Math.round(similarity * 1000) / 1000,
       totalSharedTokens: sharedTerms.length,
+      antiBiasSanitizationApplied: true,
     },
   };
 }

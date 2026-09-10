@@ -9,7 +9,16 @@ export function calculateCertificationMatch(
 ): SubScoreCalculationResult {
   const reqCerts = job.requiredCertifications || [];
   if (reqCerts.length === 0) {
-    return { score: 1.0, matchedItems: [], missingItems: [], details: { note: 'No required certifications' } };
+    return {
+      score: 1.0,
+      matchedItems: [],
+      missingItems: [],
+      details: {
+        note: 'No required certifications for this vacancy',
+        totalRequired: 0,
+        totalMatched: 0,
+      },
+    };
   }
 
   const applicantCerts = (applicant.certifications || []).map((c) => c.toLowerCase().trim());
@@ -19,7 +28,7 @@ export function calculateCertificationMatch(
   for (const cert of reqCerts) {
     const certLower = cert.toLowerCase().trim();
     const isMatched = applicantCerts.some(
-      (ac) => ac.includes(certLower) || certLower.includes(ac)
+      (ac) => ac === certLower || ac.includes(certLower) || certLower.includes(ac)
     );
     if (isMatched) {
       matchedItems.push(cert);
