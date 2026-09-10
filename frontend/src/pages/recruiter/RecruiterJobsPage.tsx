@@ -193,8 +193,9 @@ export const RecruiterJobsPage: React.FC = () => {
                     {/* Applications Count */}
                     <td className="py-4 px-4">
                       <Link
-                        to="/recruiter"
+                        to={`/recruiter/pipeline?jobId=${job.id}`}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold transition border border-brand-200"
+                        title="View vacancy pipeline & candidate ATS scores"
                       >
                         <Users className="w-3.5 h-3.5" />
                         <span>{job.applicationsCount} Candidates</span>
