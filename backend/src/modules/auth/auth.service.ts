@@ -3,8 +3,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { prisma } from '../../db/client';
 import { config } from '../../config';
 import { BadRequestError, ConflictError, UnauthorizedError } from '../../middleware/error.middleware';
-import { RegisterInput, LoginInput, AuthResponseData } from './auth.types';
-import { UserRole, UserStatus } from '@prisma/client';
+import type { RegisterInput, LoginInput, AuthResponseData, UserRole } from './auth.types';
 
 export class AuthService {
   static async register(input: RegisterInput): Promise<AuthResponseData> {
@@ -22,8 +21,8 @@ export class AuthService {
       data: {
         email: input.email.toLowerCase(),
         passwordHash,
-        role: input.role as UserRole,
-        status: input.role === 'RECRUITER' ? UserStatus.PENDING_APPROVAL : UserStatus.ACTIVE,
+        role: (input.role as UserRole) || 'APPLICANT',
+        status: input.role === 'RECRUITER' ? 'PENDING_APPROVAL' : 'ACTIVE',
         ...(input.role === 'APPLICANT' && {
           applicantProfile: {
             create: {

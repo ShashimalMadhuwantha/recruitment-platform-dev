@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { UserRole } from '@recruitment-platform/shared';
+
+export type UserRole = 'SUPER_ADMIN' | 'RECRUITER' | 'APPLICANT';
 
 export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
