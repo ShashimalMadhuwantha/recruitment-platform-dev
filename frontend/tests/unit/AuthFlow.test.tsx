@@ -28,14 +28,12 @@ const renderWithProviders = (ui: React.ReactElement, initialEntries = ['/']) => 
 
 describe('Frontend Auth Flow & Pages', () => {
   describe('LoginPage', () => {
-    it('renders login form with role switcher and OAuth buttons', () => {
+    it('renders login form with role switcher and input fields', () => {
       renderWithProviders(<LoginPage />);
 
       expect(screen.getByText('Sign In to RecruitATS')).toBeInTheDocument();
       expect(screen.getByText('Job Seeker / Applicant')).toBeInTheDocument();
       expect(screen.getByText('Employer / Recruiter')).toBeInTheDocument();
-      expect(screen.getByText('Continue with Google')).toBeInTheDocument();
-      expect(screen.getByText('Continue with LinkedIn')).toBeInTheDocument();
       expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
     });

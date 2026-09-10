@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { FormField } from '../../components/ui/FormField';
 import { Button } from '../../components/ui/Button';
-import { OAuthButtons } from '../../components/ui/OAuthButtons';
 import { useRegisterApplicant, useRegisterRecruiter } from '../../features/auth/hooks';
 import { RecruiterSubRole } from '@recruitment-platform/shared';
 
@@ -147,17 +146,6 @@ export const RegisterPage: React.FC = () => {
             <span>{errors.general}</span>
           </div>
         )}
-
-        {/* OAuth Buttons */}
-        <OAuthButtons role={role} />
-
-        <div className="relative flex py-1 items-center">
-          <div className="flex-grow border-t border-border-default"></div>
-          <span className="flex-shrink mx-4 text-xs font-medium text-text-muted uppercase tracking-wider">
-            Or register with email
-          </span>
-          <div className="flex-grow border-t border-border-default"></div>
-        </div>
 
         {/* Registration Form */}
         <form onSubmit={handleSubmit} className="space-y-4">

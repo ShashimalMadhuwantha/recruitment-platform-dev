@@ -26,13 +26,22 @@ authRouter.post('/mfa/verify', authenticateToken, AuthController.verifyMfa);
 
 // OAuth2 Endpoints
 authRouter.get('/:provider(google|linkedin)', (req, res) => {
-  // Return OAuth initiation URL
-  res.status(200).json({
-    data: {
-      authUrl: `/api/v1/auth/${req.params.provider}/callback?code=mock-oauth-code&provider=${req.params.provider}`,
-    },
-    error: null,
-  });
+  const role = req.query.role || 'APPLICANT';
+  const provider = req.params.provider;
+  const callbackUrl = `/api/v1/auth/${provider}/callback?code=mock-oauth-code&provider=${provider}&role=${role}`;
+
+  // If requested via JSON/XHR, return data envelope
+  if (req.xhr || req.headers.accept?.includes('application/json')) {
+    return res.status(200).json({
+      data: {
+        authUrl: callbackUrl,
+      },
+      error: null,
+    });
+  }
+
+  // Otherwise direct browser to callback initiation
+  return res.redirect(callbackUrl);
 });
 authRouter.get('/:provider(google|linkedin)/callback', AuthController.oauthCallback);
 authRouter.post('/:provider(google|linkedin)/callback', AuthController.oauthCallback);

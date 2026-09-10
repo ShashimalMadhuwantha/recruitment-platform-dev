@@ -6,6 +6,7 @@ import RegisterPage from '../pages/auth/RegisterPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
 import MfaVerificationPage from '../pages/auth/MfaVerificationPage';
+import OAuthCallbackPage from '../pages/auth/OAuthCallbackPage';
 import ApplicantDashboardPage from '../pages/applicant/ApplicantDashboardPage';
 import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
 import AdminOverviewPage from '../pages/admin/AdminOverviewPage';
@@ -28,6 +29,7 @@ export const AppRouter: React.FC = () => {
           <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/mfa" element={<MfaVerificationPage />} />
+          <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
           {/* Protected Applicant Routes */}
           <Route

@@ -194,6 +194,20 @@ export class AuthController {
         provider: req.params.provider,
       });
       const result = await AuthService.handleOAuthCallback(input);
+
+      // If browser GET request, redirect directly to React /auth/callback page
+      if (req.method === 'GET' && !req.xhr && !req.headers.accept?.includes('application/json')) {
+        const queryParams = new URLSearchParams({
+          token: result.tokens.accessToken,
+          refreshToken: result.tokens.refreshToken,
+          role: result.user.role,
+          userId: result.user.id,
+          email: result.user.email,
+        });
+
+        return res.redirect(`/auth/callback?${queryParams.toString()}`);
+      }
+
       return res.status(200).json({
         data: result,
         error: null,
