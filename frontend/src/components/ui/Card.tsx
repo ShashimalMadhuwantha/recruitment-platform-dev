@@ -21,4 +21,28 @@ export const Card: React.FC<CardProps> = ({ children, dense = false, className, 
   );
 };
 
+export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
+
+export const CardHeader: React.FC<CardHeaderProps> = ({ children, className, ...props }) => {
+  return (
+    <div className={cn('mb-4', className)} {...props}>
+      {children}
+    </div>
+  );
+};
+
+export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
+
+export const CardContent: React.FC<CardContentProps> = ({ children, className, ...props }) => {
+  return (
+    <div className={cn('', className)} {...props}>
+      {children}
+    </div>
+  );
+};
+
 export default Card;

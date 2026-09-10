@@ -44,6 +44,35 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             {userRole.replace('_', ' ')}
           </span>
         )}
+
+        {userRole === 'SUPER_ADMIN' && (
+          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+            <Link
+              to="/admin/dashboard"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Overview
+            </Link>
+            <Link
+              to="/admin/companies"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Companies
+            </Link>
+            <Link
+              to="/admin/users"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Users
+            </Link>
+            <Link
+              to="/admin/plans"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Plans
+            </Link>
+          </nav>
+        )}
       </div>
 
       <div className="flex items-center gap-3">

@@ -84,6 +84,12 @@ enum BackgroundJobStatus {
   FAILED
 }
 
+enum PlanTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
 // -------------------------------------------------------------
 // User & Role Profiles
 // -------------------------------------------------------------
@@ -200,8 +206,25 @@ model ApplicantProfile {
 }
 
 // -------------------------------------------------------------
-// Company / Tenant
+// Subscription Plans & Company / Tenant
 // -------------------------------------------------------------
+model SubscriptionPlan {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  tier         PlanTier @default(FREE)
+  maxJobPosts  Int      @default(3) @map("max_job_posts")
+  maxSeats     Int      @default(2) @map("max_seats")
+  maxAtsScans  Int      @default(50) @map("max_ats_scans")
+  priceMonthly Decimal  @default(0.00) @map("price_monthly") @db.Decimal(10, 2)
+  featuresJson Json?    @map("features_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  companies Company[]
+
+  @@map("subscription_plans")
+}
+
 model Company {
   id          String        @id @default(uuid())
   name        String
@@ -216,6 +239,7 @@ model Company {
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
+  plan               SubscriptionPlan?   @relation(fields: [planId], references: [id], onDelete: SetNull)
   recruiters         RecruiterProfile[]
   jobVacancies       JobVacancy[]
   scoreWeightConfigs ScoreWeightConfig[]

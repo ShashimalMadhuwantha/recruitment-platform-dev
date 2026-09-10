@@ -11,6 +11,8 @@ export interface AuthUser {
   applicantProfileId?: string | null;
   firstName?: string | null;
   lastName?: string | null;
+  isImpersonating?: boolean;
+  impersonatorId?: string | null;
 }
 
 export interface AuthTokens {

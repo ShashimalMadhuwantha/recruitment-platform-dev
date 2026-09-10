@@ -8,6 +8,23 @@ export type UserStatus = 'ACTIVE' | 'PENDING_APPROVAL' | 'SUSPENDED' | 'BANNED';
 // Company Status
 export type CompanyStatus = 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
 
+// Subscription Plans
+export type PlanTier = 'FREE' | 'PRO' | 'ENTERPRISE';
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  tier: PlanTier;
+  description?: string | null;
+  maxJobPosts: number;
+  maxSeats: number;
+  maxAtsScans: number;
+  priceMonthly: number | string;
+  featuresJson?: Record<string, boolean> | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Job Status
 export type JobStatus = 'DRAFT' | 'PUBLISHED' | 'PAUSED' | 'CLOSED' | 'FLAGGED';
 
@@ -103,4 +120,29 @@ export interface AuthenticatedUser {
   status: UserStatus;
   companyId?: string | null;
   recruiterSubRole?: RecruiterSubRole | null;
+  isImpersonating?: boolean;
+  impersonatorId?: string | null;
+}
+
+// Super Admin Platform Statistics
+export interface AdminPlatformStats {
+  totalUsers: number;
+  totalApplicants: number;
+  totalRecruiters: number;
+  pendingCompaniesCount: number;
+  activeCompaniesCount: number;
+  totalJobsCount: number;
+}
+
+// Audit Log Entry
+export interface AuditLogEntry {
+  id: string;
+  actorId?: string | null;
+  action: string;
+  targetType: string;
+  targetId?: string | null;
+  detailsJson?: Record<string, unknown> | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  createdAt: string;
 }

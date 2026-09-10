@@ -108,7 +108,59 @@ async function main() {
       });
     }
   }
-  console.log('✅ Seeded default pipeline stages');
+  // 5. Seed Default Subscription Plans (Free, Pro, Enterprise)
+  const defaultPlans = [
+    {
+      name: 'Free Starter',
+      tier: 'FREE' as const,
+      maxJobPosts: 3,
+      maxSeats: 2,
+      maxAtsScans: 50,
+      priceMonthly: 0.00,
+      featuresJson: {
+        customScreeningQuestions: false,
+        advancedAtsWeightOverride: false,
+        analyticsExport: false,
+      },
+    },
+    {
+      name: 'Pro Recruiter',
+      tier: 'PRO' as const,
+      maxJobPosts: 20,
+      maxSeats: 10,
+      maxAtsScans: 500,
+      priceMonthly: 99.00,
+      featuresJson: {
+        customScreeningQuestions: true,
+        advancedAtsWeightOverride: true,
+        analyticsExport: true,
+      },
+    },
+    {
+      name: 'Enterprise ATS',
+      tier: 'ENTERPRISE' as const,
+      maxJobPosts: 9999,
+      maxSeats: 100,
+      maxAtsScans: 99999,
+      priceMonthly: 399.00,
+      featuresJson: {
+        customScreeningQuestions: true,
+        advancedAtsWeightOverride: true,
+        analyticsExport: true,
+        dedicatedAccountManager: true,
+        customIntegrations: true,
+      },
+    },
+  ];
+
+  for (const plan of defaultPlans) {
+    await prisma.subscriptionPlan.upsert({
+      where: { name: plan.name },
+      update: {},
+      create: plan,
+    });
+  }
+  console.log(`✅ Seeded ${defaultPlans.length} default subscription plans`);
 
   console.log('🎉 Database seeding completed successfully.');
 }

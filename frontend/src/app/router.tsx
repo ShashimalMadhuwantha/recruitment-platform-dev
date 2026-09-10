@@ -10,7 +10,11 @@ import OAuthCallbackPage from '../pages/auth/OAuthCallbackPage';
 import ApplicantDashboardPage from '../pages/applicant/ApplicantDashboardPage';
 import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
 import AdminOverviewPage from '../pages/admin/AdminOverviewPage';
+import AdminCompaniesPage from '../pages/admin/AdminCompaniesPage';
+import AdminUsersPage from '../pages/admin/AdminUsersPage';
+import AdminPlansPage from '../pages/admin/AdminPlansPage';
 import Header from '../components/shared/Header';
+import ImpersonationBanner from '../components/shared/ImpersonationBanner';
 import { ProtectedRoute } from '../components/shared/ProtectedRoute';
 import { useAuth } from './providers';
 
@@ -19,6 +23,7 @@ export const AppRouter: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-muted">
+      <ImpersonationBanner />
       <Header userRole={user?.role} userEmail={user?.email} onLogout={logout} />
       <main className="flex-1">
         <Routes>
@@ -81,6 +86,30 @@ export const AppRouter: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                 <AdminOverviewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/companies"
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <AdminCompaniesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <AdminUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/plans"
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                <AdminPlansPage />
               </ProtectedRoute>
             }
           />
