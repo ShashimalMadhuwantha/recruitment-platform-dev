@@ -39,7 +39,7 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
           <h2 className="text-2xl font-bold text-text-primary tracking-tight">Forgot Password</h2>
           <p className="text-sm text-text-secondary">
-            Enter your email address and we'll send you instructions to reset your password.
+            Enter your email address to receive a secure password reset link.
           </p>
         </div>
 
@@ -47,13 +47,13 @@ export const ForgotPasswordPage: React.FC = () => {
           <div className="space-y-4">
             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-800 space-y-2">
               <div className="flex items-center space-x-2 font-semibold text-emerald-900">
-                <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Reset Instructions Dispatched</span>
+                <span>Reset Link Dispatched</span>
               </div>
-              <p className="text-xs">
-                If an account exists with <span className="font-semibold">{email}</span>, you will receive a password reset link shortly.
+              <p className="text-xs text-emerald-700">
+                If an account exists with <span className="font-semibold">{email}</span>, an email with password reset instructions has been sent to your inbox.
               </p>
             </div>
 
@@ -62,7 +62,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 to={`/auth/reset-password?email=${encodeURIComponent(email)}`}
                 className="inline-block text-xs font-semibold text-brand-primary hover:underline"
               >
-                Already have a reset token? Enter it here &rarr;
+                Already have a reset token from your email? Enter it here &rarr;
               </Link>
               <div>
                 <Link
@@ -102,7 +102,7 @@ export const ForgotPasswordPage: React.FC = () => {
               className="w-full h-10 font-semibold"
               disabled={forgotPasswordMutation.isPending}
             >
-              {forgotPasswordMutation.isPending ? 'Sending Link...' : 'Send Reset Link'}
+              {forgotPasswordMutation.isPending ? 'Sending Reset Link...' : 'Send Reset Link'}
             </Button>
 
             <div className="text-center pt-2">

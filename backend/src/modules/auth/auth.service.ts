@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { prisma } from '../../db/client';
 import { config } from '../../config';
+import { MailService } from '../../services/mail.service';
 import {
   BadRequestError,
   ConflictError,
@@ -350,6 +351,9 @@ export class AuthService {
         expiresAt,
       },
     });
+
+    // Send reset email via MailService (transports via SMTP / Gmail or logs to server console)
+    await MailService.sendPasswordResetEmail(user.email, rawToken);
 
     return { resetToken: rawToken, expiresAt };
   }
