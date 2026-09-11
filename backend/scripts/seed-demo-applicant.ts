@@ -281,19 +281,22 @@ async function seedDemoApplicant() {
       },
     });
   } else {
-    // Reset CVs and items so the applicant is clean and ready for PDF upload testing
+    // Reset applications, saved jobs, CVs, and items so the applicant is clean and ready for fresh testing
+    await prisma.application.deleteMany({ where: { applicantId: profile.id } });
+    await prisma.savedJob.deleteMany({ where: { applicantId: profile.id } });
     await prisma.cV.deleteMany({ where: { applicantId: profile.id } });
     await prisma.applicantSkill.deleteMany({ where: { applicantId: profile.id } });
     await prisma.workExperience.deleteMany({ where: { applicantId: profile.id } });
     await prisma.education.deleteMany({ where: { applicantId: profile.id } });
+    await prisma.certification.deleteMany({ where: { applicantId: profile.id } });
 
     profile = await prisma.applicantProfile.update({
       where: { id: profile.id },
       data: {
         firstName: 'Alex',
         lastName: 'Turner',
-        headline: 'Senior Full-Stack Engineer',
-        summary: 'Passionate and results-driven Software Engineer with 4+ years of professional experience.',
+        headline: 'Senior Full-Stack Engineer — React & Node.js',
+        summary: 'Passionate and results-driven Software Engineer with 4+ years of professional experience architecting high-throughput cloud applications and responsive modern web interfaces.',
         location: 'San Francisco, CA',
         phone: '+1 (415) 555-0199',
         visibilitySettings: {
@@ -303,11 +306,6 @@ async function seedDemoApplicant() {
       },
     });
   }
-
-  console.log(`✅ Demo Applicant seeded successfully:`);
-  console.log(`   Email:    ${email}`);
-  console.log(`   Password: ${password}`);
-  console.log(`   Profile ID: ${profile.id}`);
 
   // 3. Generate sample PDF resume in public/samples/ directory
   const publicSamplesDir = path.resolve(process.cwd(), '../frontend/public/samples');
@@ -327,7 +325,97 @@ async function seedDemoApplicant() {
   const textRes = await parser.getText();
   await parser.destroy();
   console.log(`🔍 Verification of generated PDF text extraction: length = ${textRes.text.length} characters`);
-  console.log(`   Preview: ${textRes.text.slice(0, 150).replace(/\n/g, ' ')}...`);
+
+  // 4. Create primary CV record in database
+  const cvRecord = await prisma.cV.create({
+    data: {
+      applicantId: profile.id,
+      fileRef: 'samples/Alex_Turner_Software_Engineer_CV.pdf',
+      fileName: 'Alex_Turner_Software_Engineer_CV.pdf',
+      fileSize: buf.length,
+      mimeType: 'application/pdf',
+      parsedText: textRes.text,
+      parsedJson: {
+        skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'AWS', 'Tailwind CSS'],
+        experienceYears: 4,
+        educationLevel: "Bachelor's Degree",
+      },
+      versionLabel: 'v1',
+      isPrimary: true,
+      parsingStatus: 'COMPLETED',
+    },
+  });
+  console.log(`📄 Primary CV attached to profile (ID: ${cvRecord.id})`);
+
+  // 5. Populate master taxonomy skills for ATS scoring
+  const skillsToAttach = [
+    { name: 'React', proficiency: 4, years: 3.5 },
+    { name: 'TypeScript', proficiency: 4, years: 3.0 },
+    { name: 'Node.js', proficiency: 4, years: 3.0 },
+    { name: 'PostgreSQL', proficiency: 3, years: 2.5 },
+    { name: 'Docker', proficiency: 3, years: 2.0 },
+    { name: 'AWS', proficiency: 3, years: 2.0 },
+    { name: 'Tailwind CSS', proficiency: 4, years: 2.5 },
+    { name: 'GraphQL', proficiency: 3, years: 2.0 },
+  ];
+
+  for (const s of skillsToAttach) {
+    const skill = await prisma.skill.findUnique({ where: { name: s.name } });
+    if (skill) {
+      await prisma.applicantSkill.create({
+        data: {
+          applicantId: profile.id,
+          skillId: skill.id,
+          proficiency: s.proficiency,
+          yearsExperience: s.years,
+        },
+      });
+    }
+  }
+
+  // 6. Populate Work Experience
+  await prisma.workExperience.create({
+    data: {
+      applicantId: profile.id,
+      companyName: 'TechCorp Solutions',
+      title: 'Senior Full-Stack Engineer',
+      startDate: new Date('2021-06-01'),
+      isCurrent: true,
+      description: 'Lead engineer for microservice architecture, high-concurrency Node.js REST services, and React user experiences.',
+    },
+  });
+
+  // 7. Populate Education
+  await prisma.education.create({
+    data: {
+      applicantId: profile.id,
+      institution: 'University of California, Berkeley',
+      degree: "Bachelor of Science",
+      fieldOfStudy: 'Computer Science',
+      startDate: new Date('2016-09-01'),
+      endDate: new Date('2020-05-30'),
+    },
+  });
+
+  // 8. Populate Certification
+  await prisma.certification.create({
+    data: {
+      applicantId: profile.id,
+      name: 'AWS Certified Solutions Architect',
+      issuer: 'Amazon Web Services',
+      issueDate: new Date('2022-04-15'),
+    },
+  });
+
+  console.log(`\n========================================================`);
+  console.log(`✅ Demo Applicant Ready for Testing!`);
+  console.log(`========================================================`);
+  console.log(`📧 Email:    ${email}`);
+  console.log(`🔑 Password: ${password}`);
+  console.log(`👤 Name:     Alex Turner`);
+  console.log(`📄 CV:       Alex_Turner_Software_Engineer_CV.pdf (attached)`);
+  console.log(`🎯 Status:   0 Applications (Ready to fresh apply to any job!)`);
+  console.log(`========================================================\n`);
 }
 
 seedDemoApplicant()
