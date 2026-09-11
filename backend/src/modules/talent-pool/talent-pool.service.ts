@@ -37,8 +37,10 @@ export class TalentPoolService {
         workExperiences: true,
         educations: true,
         cvs: {
-          where: { isPrimary: true },
-          take: 1,
+          orderBy: [
+            { isPrimary: 'desc' },
+            { createdAt: 'desc' },
+          ],
         },
       },
     });
@@ -110,7 +112,7 @@ export class TalentPoolService {
         yearsExperience: s.yearsExperience ? Number(s.yearsExperience) : undefined,
       }));
 
-      const defaultCv = profile.cvs[0];
+      const defaultCv = profile.cvs.find((c) => c.isPrimary) || profile.cvs[0];
 
       return {
         id: profile.id,
@@ -125,7 +127,13 @@ export class TalentPoolService {
         skills,
         experienceYears: expYears,
         isBlind,
-        cvUrl: isBlind ? null : defaultCv?.fileUrl || null,
+        cvId: isBlind ? null : defaultCv?.id || null,
+        cvFileName: isBlind ? null : defaultCv?.fileName || null,
+        cvUrl: isBlind
+          ? null
+          : defaultCv
+          ? `/v1/applicant/resume/${defaultCv.id}/download`
+          : null,
         profileVisibility: visibility,
       };
     });
@@ -156,14 +164,17 @@ export class TalentPoolService {
     }
 
     if (params.skills) {
-      const requestedSkills = Array.isArray(params.skills)
-        ? params.skills.map((s) => s.toLowerCase().trim())
-        : params.skills.split(',').map((s) => s.toLowerCase().trim()).filter(Boolean);
+      const rawSkills = params.skills as unknown;
+      const requestedSkills: string[] = Array.isArray(rawSkills)
+        ? rawSkills.map((s: string) => String(s).toLowerCase().trim())
+        : typeof rawSkills === 'string'
+        ? rawSkills.split(',').map((s: string) => s.toLowerCase().trim()).filter(Boolean)
+        : [];
 
       if (requestedSkills.length > 0) {
         filtered = filtered.filter((c) => {
           const candidateSkills = c.skills.map((s) => s.name.toLowerCase());
-          return requestedSkills.some((req) =>
+          return requestedSkills.some((req: string) =>
             candidateSkills.some((cs) => cs.includes(req) || req.includes(cs))
           );
         });

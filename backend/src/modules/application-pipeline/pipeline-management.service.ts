@@ -219,7 +219,7 @@ export class PipelineManagementService {
         appliedAt: app.appliedAt.toISOString(),
         cvId: app.cvId,
         cvFileName: app.cv?.fileName || undefined,
-        cvFileUrl: app.cv?.fileUrl || undefined,
+        cvFileUrl: app.cv ? `/v1/applicant/resume/${app.cv.id}/download` : undefined,
         atsScore: atsScoreRecord
           ? {
               overallScore: effectiveScore,

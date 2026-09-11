@@ -990,5 +990,7 @@ export interface TalentPoolCandidateDto {
   experienceYears?: number;
   isBlind: boolean;
   cvUrl?: string | null;
+  cvId?: string | null;
+  cvFileName?: string | null;
   profileVisibility: 'PUBLIC' | 'BLIND';
 }

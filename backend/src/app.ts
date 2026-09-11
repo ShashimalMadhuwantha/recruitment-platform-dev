@@ -53,6 +53,14 @@ export const createApp = (): Express => {
     });
   });
 
+  // Normalize accidentally duplicated /api/api prefix from client baseURLs
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    if (req.url.startsWith('/api/api/')) {
+      req.url = req.url.replace('/api/api/', '/api/');
+    }
+    next();
+  });
+
   // Mount API Domain Routes (v1)
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/ats', atsScoringRouter);

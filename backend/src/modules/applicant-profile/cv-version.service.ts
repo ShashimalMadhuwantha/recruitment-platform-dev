@@ -243,28 +243,103 @@ export class CvVersionService {
   /**
    * Resolve file path for downloading a CV file
    */
-  static async getDownloadInfo(cvId: string, userId: string): Promise<{ filePath: string; fileName: string; mimeType: string }> {
-    const profile = await prisma.applicantProfile.findUnique({
-      where: { userId },
-      select: { id: true },
+  static async getDownloadInfo(
+    cvId: string,
+    userId: string,
+    userRole: string = 'APPLICANT'
+  ): Promise<{ filePath: string; fileName: string; mimeType: string }> {
+    const cv = await prisma.cV.findUnique({
+      where: { id: cvId },
+      include: {
+        applicant: {
+          select: {
+            id: true,
+            userId: true,
+            visibilitySettings: true,
+          },
+        },
+      },
     });
-    if (!profile) throw new NotFoundError('Applicant profile not found.');
-
-    const cv = await prisma.cV.findUnique({ where: { id: cvId } });
     if (!cv) throw new NotFoundError('CV not found.');
-    if (cv.applicantId !== profile.id) {
-      throw new ForbiddenError('You do not have permission to download this CV.');
+
+    if (userRole === 'APPLICANT') {
+      const profile = await prisma.applicantProfile.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (!profile || cv.applicantId !== profile.id) {
+        throw new ForbiddenError('You do not have permission to download this CV.');
+      }
+    } else if (userRole === 'RECRUITER') {
+      let isBlindOrPrivate = false;
+      if (cv.applicant?.visibilitySettings) {
+        try {
+          const settings =
+            typeof cv.applicant.visibilitySettings === 'string'
+              ? JSON.parse(cv.applicant.visibilitySettings)
+              : (cv.applicant.visibilitySettings as any);
+          if (settings.visibility === 'BLIND' || settings.visibility === 'PRIVATE') {
+            isBlindOrPrivate = true;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (isBlindOrPrivate) {
+        const application = await prisma.application.findFirst({
+          where: {
+            applicantId: cv.applicantId,
+            job: {
+              company: {
+                recruiters: {
+                  some: { userId },
+                },
+              },
+            },
+          },
+        });
+        if (!application) {
+          throw new ForbiddenError('This candidate profile is protected or private.');
+        }
+      }
     }
+    // SUPER_ADMIN has unrestricted access
 
     // Resolve path: could be uploads/resumes/filename or public/samples/
     let fullPath = path.resolve(process.cwd(), 'uploads', cv.fileRef);
     if (!fs.existsSync(fullPath)) {
-      // Check uploads direct
       fullPath = path.resolve(process.cwd(), 'uploads/resumes', cv.fileName);
     }
     if (!fs.existsSync(fullPath)) {
-      // Check samples
       fullPath = path.resolve(process.cwd(), '../frontend/public', cv.fileRef);
+    }
+    if (!fs.existsSync(fullPath)) {
+      fullPath = path.resolve(process.cwd(), 'uploads/resumes', path.basename(cv.fileRef));
+    }
+
+    if (!fs.existsSync(fullPath)) {
+      // Check if any other CV for this applicant exists on disk
+      const otherCvs = await prisma.cV.findMany({
+        where: { applicantId: cv.applicantId },
+        orderBy: { createdAt: 'desc' },
+      });
+      for (const other of otherCvs) {
+        const altPath1 = path.resolve(process.cwd(), 'uploads', other.fileRef);
+        const altPath2 = path.resolve(process.cwd(), 'uploads/resumes', other.fileName);
+        if (fs.existsSync(altPath1)) {
+          fullPath = altPath1;
+          break;
+        }
+        if (fs.existsSync(altPath2)) {
+          fullPath = altPath2;
+          break;
+        }
+      }
+    }
+
+    if (!fs.existsSync(fullPath)) {
+      throw new NotFoundError('CV file not found on disk.');
     }
 
     return {

@@ -14,7 +14,10 @@ declare global {
 
 export const authenticateToken = (req: Request, _res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  let token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  if (!token && typeof req.query.token === 'string') {
+    token = req.query.token;
+  }
 
   if (!token) {
     return next(new UnauthorizedError('Missing authentication token'));

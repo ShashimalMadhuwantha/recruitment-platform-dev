@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTalentPool } from '../../features/recruiter-pipeline/hooks';
 import { TalentPoolCandidateDto } from '../../features/recruiter-pipeline/types';
+import { apiClient } from '../../lib/api-client';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import {
@@ -64,6 +65,41 @@ export const TalentPoolPage: React.FC = () => {
     setSelectedSkills([]);
     setMinExperience(undefined);
     setPage(1);
+  };
+
+  const [downloadingCandidateId, setDownloadingCandidateId] = useState<string | null>(null);
+
+  const handleDownloadCv = async (candidate: TalentPoolCandidateDto) => {
+    if (!candidate.cvUrl) return;
+    try {
+      setDownloadingCandidateId(candidate.id);
+      let endpoint = candidate.cvUrl;
+      if (endpoint.startsWith('/api/')) {
+        endpoint = endpoint.replace(/^\/api/, '');
+      }
+      const res = await apiClient.get(endpoint, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName =
+        candidate.cvFileName ||
+        `${candidate.fullName.replace(/[^a-zA-Z0-9_-]/g, '_')}_CV.pdf`;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('Failed to download CV:', err);
+      if (candidate.cvUrl.startsWith('http')) {
+        window.open(candidate.cvUrl, '_blank');
+      } else {
+        alert('Unable to download CV. The file may no longer be available.');
+      }
+    } finally {
+      setDownloadingCandidateId(null);
+    }
   };
 
   return (
@@ -290,15 +326,20 @@ export const TalentPoolPage: React.FC = () => {
             {/* Bottom Actions */}
             <div className="pt-2 border-t border-border-default flex items-center justify-between gap-2">
               {candidate.cvUrl ? (
-                <a
-                  href={candidate.cvUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline flex items-center gap-1"
+                <button
+                  type="button"
+                  onClick={() => handleDownloadCv(candidate)}
+                  disabled={downloadingCandidateId === candidate.id}
+                  className="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  title="Download candidate CV"
                 >
-                  <FileText className="w-3.5 h-3.5" />
+                  {downloadingCandidateId === candidate.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <FileText className="w-3.5 h-3.5" />
+                  )}
                   <span>Download CV</span>
-                </a>
+                </button>
               ) : (
                 <span className="text-[11px] text-text-muted">
                   {candidate.isBlind ? 'CV masked for privacy' : 'No public CV'}

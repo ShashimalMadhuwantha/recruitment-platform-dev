@@ -357,7 +357,8 @@ export class ApplicantProfileController {
   async downloadResume(req: Request, res: Response) {
     try {
       const userId = (req as any).user.id;
-      const downloadInfo = await CvVersionService.getDownloadInfo(req.params.id, userId);
+      const userRole = (req as any).user.role;
+      const downloadInfo = await CvVersionService.getDownloadInfo(req.params.id, userId, userRole);
       return res.download(downloadInfo.filePath, downloadInfo.fileName);
     } catch (error: any) {
       return res.status(404).json({ data: null, error: { message: error.message, code: 'FILE_NOT_FOUND' } });
