@@ -9,6 +9,8 @@ import MfaVerificationPage from '../pages/auth/MfaVerificationPage';
 import OAuthCallbackPage from '../pages/auth/OAuthCallbackPage';
 import ApplicantDashboardPage from '../pages/applicant/ApplicantDashboardPage';
 import ApplicantProfilePage from '../pages/applicant/ApplicantProfilePage';
+import JobSearchPage from '../pages/applicant/JobSearchPage';
+import JobDetailPage from '../pages/applicant/JobDetailPage';
 import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
 import RecruiterJobsPage from '../pages/recruiter/RecruiterJobsPage';
 import JobCreationWizardPage from '../pages/recruiter/JobCreationWizardPage';
@@ -34,6 +36,8 @@ export const AppRouter: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/jobs" element={<JobSearchPage />} />
+          <Route path="/jobs/:id" element={<JobDetailPage />} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/register" element={<RegisterPage />} />
           <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />

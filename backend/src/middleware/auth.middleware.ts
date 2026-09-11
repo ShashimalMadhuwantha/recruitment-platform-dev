@@ -42,3 +42,36 @@ export const authenticateToken = (req: Request, _res: Response, next: NextFuncti
     return next(new UnauthorizedError('Invalid or expired authentication token'));
   }
 };
+
+export const optionalAuthenticateToken = (req: Request, _res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const payload = jwt.verify(token, config.JWT_SECRET) as {
+      userId: string;
+      email: string;
+      role: UserRole;
+      status: UserStatus;
+      companyId?: string | null;
+    };
+
+    req.user = {
+      id: payload.userId,
+      email: payload.email,
+      role: payload.role,
+      status: payload.status,
+      companyId: payload.companyId,
+    };
+
+    next();
+  } catch {
+    // Gracefully ignore invalid token on optional auth
+    next();
+  }
+};
+

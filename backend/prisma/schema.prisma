@@ -253,6 +253,7 @@ model ApplicantProfile {
   portfolios      Portfolio[]
   cvs             CV[]
   applications    Application[]
+  savedJobs       SavedJob[]
 
   @@map("applicant_profiles")
 }
@@ -452,6 +453,7 @@ model JobVacancy {
   applications       Application[]
   pipelineStages     PipelineStage[]
   scoreWeightConfigs ScoreWeightConfig[]
+  savedJobs          SavedJob[]
 
   @@map("job_vacancies")
 }
@@ -493,11 +495,12 @@ model Application {
   applicantId String            @map("applicant_id")
   jobId       String            @map("job_id")
   cvId        String?           @map("cv_id")
-  status      ApplicationStatus @default(APPLIED)
-  coverLetter String?           @map("cover_letter") @db.Text
-  appliedAt   DateTime          @default(now()) @map("applied_at")
-  withdrawnAt DateTime?         @map("withdrawn_at")
-  updatedAt   DateTime          @updatedAt @map("updated_at")
+  status                 ApplicationStatus @default(APPLIED)
+  coverLetter            String?           @map("cover_letter") @db.Text
+  screeningAnswersJson   Json?             @map("screening_answers_json")
+  appliedAt              DateTime          @default(now()) @map("applied_at")
+  withdrawnAt            DateTime?         @map("withdrawn_at")
+  updatedAt              DateTime          @updatedAt @map("updated_at")
 
   applicant          ApplicantProfile    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   job                JobVacancy          @relation(fields: [jobId], references: [id], onDelete: Cascade)
@@ -508,6 +511,19 @@ model Application {
 
   @@unique([applicantId, jobId])
   @@map("applications")
+}
+
+model SavedJob {
+  id          String   @id @default(uuid())
+  applicantId String   @map("applicant_id")
+  jobId       String   @map("job_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  applicant   ApplicantProfile @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  job         JobVacancy       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([applicantId, jobId])
+  @@map("saved_jobs")
 }
 
 model ATSScore {

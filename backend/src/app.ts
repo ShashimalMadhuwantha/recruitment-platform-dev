@@ -11,6 +11,7 @@ import authRouter from './modules/auth/auth.routes';
 import atsScoringRouter from './modules/ats-scoring/ats-scoring.routes';
 import applicantProfileRouter from './modules/applicant-profile/applicant-profile.routes';
 import jobVacancyRouter from './modules/job-vacancy/job-vacancy.routes';
+import jobSearchRouter from './modules/job-search/job-search.routes';
 import applicationPipelineRouter from './modules/application-pipeline/application-pipeline.routes';
 import notificationsRouter from './modules/notifications/notifications.routes';
 import adminRouter from './modules/admin/admin.routes';
@@ -57,7 +58,9 @@ export const createApp = (): Express => {
   app.use('/api/v1/ats-scoring', atsScoringRouter);
   app.use('/api/v1/applicant', applicantProfileRouter);
   app.use('/api/v1/applicant-profiles', applicantProfileRouter);
+  app.use('/api/v1/jobs', jobSearchRouter);
   app.use('/api/v1/job-vacancies', jobVacancyRouter);
+  app.use('/api/v1/applications', applicationPipelineRouter);
   app.use('/api/v1/application-pipelines', applicationPipelineRouter);
   app.use('/api/v1/notifications', notificationsRouter);
   app.use('/api/v1/taxonomy', systemConfigRouter);

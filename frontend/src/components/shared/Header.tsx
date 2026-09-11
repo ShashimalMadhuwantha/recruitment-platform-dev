@@ -112,6 +112,12 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
         {userRole === 'APPLICANT' && (
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
             <Link
+              to="/jobs"
+              className="px-3 py-1.5 rounded-md text-brand-600 hover:text-brand-700 hover:bg-brand-50 font-semibold transition-colors"
+            >
+              Find Jobs
+            </Link>
+            <Link
               to="/applicant/dashboard"
               className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
             >
@@ -125,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             </Link>
             <Link
               to="/applicant/profile?tab=resume"
-              className="px-3 py-1.5 rounded-md text-brand-600 hover:text-brand-700 hover:bg-brand-50 font-semibold transition-colors"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
             >
               Resume / CV
             </Link>

@@ -695,4 +695,120 @@ export interface BatchRescoreResultDto {
   durationMs: number;
 }
 
+// -------------------------------------------------------------
+// Job Search & Applicant Application Flow (Epic 8)
+// -------------------------------------------------------------
+export interface JobSearchFilters {
+  keyword?: string;
+  location?: string;
+  employmentType?: EmploymentType;
+  minSalary?: number;
+  maxSalary?: number;
+  remoteOnly?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export interface PublicJobListItem {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companyLogoUrl?: string | null;
+  companyIndustry?: string | null;
+  title: string;
+  location?: string | null;
+  employmentType: EmploymentType;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  deadline?: string | null;
+  createdAt: string;
+  requiredSkills: Array<{
+    id: string;
+    name: string;
+    priority: SkillPriority;
+    minProficiency: number;
+  }>;
+  isSaved?: boolean;
+  hasApplied?: boolean;
+}
+
+export interface PublicJobDetailDto {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companyLogoUrl?: string | null;
+  companyIndustry?: string | null;
+  title: string;
+  description: string;
+  requirementsSummary?: string | null;
+  location?: string | null;
+  employmentType: EmploymentType;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  deadline?: string | null;
+  createdAt: string;
+  requirements?: JobRequirementDto | null;
+  requiredSkills: Array<{
+    id: string;
+    name: string;
+    priority: SkillPriority;
+    minProficiency: number;
+    weight: number;
+  }>;
+  screeningQuestions?: ScreeningQuestion[];
+  isSaved?: boolean;
+  hasApplied?: boolean;
+  applicationId?: string | null;
+  applicationStatus?: ApplicationStatus | null;
+}
+
+export interface ScreeningAnswerItem {
+  questionId: string;
+  question: string;
+  answer: string | boolean;
+}
+
+export interface SubmitApplicationDto {
+  jobId: string;
+  cvId?: string;
+  coverLetter?: string;
+  screeningAnswers?: ScreeningAnswerItem[];
+}
+
+export interface ApplicantApplicationListItem {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  companyLogoUrl?: string | null;
+  location?: string | null;
+  employmentType: EmploymentType;
+  status: ApplicationStatus;
+  appliedAt: string;
+  withdrawnAt?: string | null;
+  cvFileName?: string | null;
+  overallScore?: number | null;
+  scoreBand?: ScoreBand | null;
+  canWithdraw: boolean;
+}
+
+export interface SavedJobDto {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  companyLogoUrl?: string | null;
+  location?: string | null;
+  employmentType: EmploymentType;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  deadline?: string | null;
+  savedAt: string;
+}
+
+export interface WithdrawApplicationDto {
+  reason?: string;
+}
+
+
 
