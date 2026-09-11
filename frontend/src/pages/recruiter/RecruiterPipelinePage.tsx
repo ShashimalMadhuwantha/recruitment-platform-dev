@@ -5,7 +5,8 @@ import { ScoreBadge } from '../../components/ui/ScoreBadge';
 import { Button } from '../../components/ui/Button';
 import { CandidateScoreAnalysisModal } from '../../features/ats-scoring/components/CandidateScoreAnalysisModal';
 import { useCompanyJobs } from '../../features/job-vacancy/hooks';
-import { Briefcase, Users } from 'lucide-react';
+import { useJobApplications } from '../../features/application/hooks';
+import { Briefcase, Users, Loader2 } from 'lucide-react';
 
 interface PipelineCandidate {
   id: string;
@@ -33,70 +34,28 @@ export const RecruiterPipelinePage: React.FC = () => {
     ? jobs.find((j) => j.id === requestedJobId) || jobs[0]
     : jobs[0];
 
-  // Pipeline stage data mapped by job vacancy ID
-  const jobPipelines: Record<string, PipelineStage[]> = {
-    // Job 1: Senior Full-Stack Engineer (React / Node.js)
-    '36a383f4-4d3f-48a7-a4bb-f527e951c5ea': [
-      {
-        name: 'Applied',
-        candidates: [
-          { id: '3d9d1665-7707-4c8a-aa3c-a1f6d211bd5f', name: 'Maria Silva', role: 'Frontend UI/UX Specialist', score: 92.0 },
-          { id: '967b20bd-0608-435b-9bbb-cf83cd8d55a6', name: 'David Kim', role: 'Backend Python Developer', score: 64.0 },
-        ],
-      },
-      {
-        name: 'Screening',
-        candidates: [
-          { id: 'cc4e7238-878f-4c85-94d0-a37ed36d93c4', name: 'Shashimal Madhuwantha', role: 'Software Engineering Undergraduate — Full-Stack', score: 46.0 },
-          { id: '7ee65d2d-cadd-482e-8576-b4034413ce42', name: 'Alex Turner', role: 'Senior Full-Stack Engineer', score: 94.0 },
-        ],
-      },
-      {
-        name: 'Interview',
-        candidates: [
-          { id: '78ab7876-ed9b-4f84-b570-f09c6ac1f8b8', name: 'Sarah Chen', role: 'TypeScript Cloud Architect', score: 96.5 },
-          { id: '6cdaa203-6b65-4c97-8006-3ba13b01b7ce', name: 'James Wilson', role: 'Senior React Developer', score: 84.5 },
-        ],
-      },
-      {
-        name: 'Offer',
-        candidates: [],
-      },
-    ],
-    // Job 2: Full Stack React / Node Developer
-    '77b21a88-251c-4b68-b80c-99d9804b32c0': [
-      {
-        name: 'Applied',
-        candidates: [
-          { id: 'cd87551d-fcd4-44ce-bffe-3fe30dc1c88b', name: 'Shashimal Madhuwantha', role: 'Software Engineering Undergraduate — Full-Stack', score: 63.0 },
-        ],
-      },
-      {
-        name: 'Screening',
-        candidates: [],
-      },
-      {
-        name: 'Interview',
-        candidates: [],
-      },
-      {
-        name: 'Offer',
-        candidates: [],
-      },
-    ],
-  };
+  // Fetch real candidate applications for the selected job vacancy
+  const { data: realApplications = [], isLoading: isLoadingApps } = useJobApplications(activeJob?.id);
 
-  const defaultEmptyStages: PipelineStage[] = [
-    { name: 'Applied', candidates: [] },
-    { name: 'Screening', candidates: [] },
-    { name: 'Interview', candidates: [] },
-    { name: 'Offer', candidates: [] },
+  // Dynamically group applications by stage
+  const stages: PipelineStage[] = [
+    {
+      name: 'Applied',
+      candidates: realApplications.filter((a) => a.stage === 'Applied'),
+    },
+    {
+      name: 'Screening',
+      candidates: realApplications.filter((a) => a.stage === 'Screening'),
+    },
+    {
+      name: 'Interview',
+      candidates: realApplications.filter((a) => a.stage === 'Interview'),
+    },
+    {
+      name: 'Offer',
+      candidates: realApplications.filter((a) => a.stage === 'Offer'),
+    },
   ];
-
-  // Resolve active stages for the selected vacancy
-  const stages = activeJob && jobPipelines[activeJob.id]
-    ? jobPipelines[activeJob.id]
-    : defaultEmptyStages;
 
   const totalCandidates = stages.reduce((acc, stage) => acc + stage.candidates.length, 0);
 
@@ -139,7 +98,7 @@ export const RecruiterPipelinePage: React.FC = () => {
               >
                 {jobs.map((job) => (
                   <option key={job.id} value={job.id}>
-                    {job.title} ({job.applicationsCount || (jobPipelines[job.id]?.reduce((a, s) => a + s.candidates.length, 0) ?? 0)} candidates)
+                    {job.title} ({job.applicationsCount ?? 0} candidates)
                   </option>
                 ))}
               </select>
@@ -177,8 +136,15 @@ export const RecruiterPipelinePage: React.FC = () => {
 
       {/* Kanban Stages Grid */}
       {!isLoadingJobs && jobs.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {stages.map((stage) => (
+        <div className="space-y-3">
+          {isLoadingApps && (
+            <div className="flex items-center gap-2 text-xs text-text-secondary py-1">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-600" />
+              <span>Updating candidate applications...</span>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {stages.map((stage) => (
             <div key={stage.name} className="bg-surface-muted p-3.5 rounded-lg border border-border-default space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-border-default">
                 <span className="text-xs font-semibold text-text-primary">{stage.name}</span>
@@ -216,6 +182,7 @@ export const RecruiterPipelinePage: React.FC = () => {
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
 

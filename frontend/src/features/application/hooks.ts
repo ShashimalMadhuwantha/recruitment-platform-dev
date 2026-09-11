@@ -35,6 +35,16 @@ export const useWithdrawApplication = () => {
     mutationFn: ({ id, reason }) => applicationApi.withdrawApplication(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['job-applications'] });
     },
   });
 };
+
+export const useJobApplications = (jobId?: string) => {
+  return useQuery({
+    queryKey: ['job-applications', jobId],
+    queryFn: () => applicationApi.getJobApplications(jobId!),
+    enabled: Boolean(jobId),
+  });
+};
+

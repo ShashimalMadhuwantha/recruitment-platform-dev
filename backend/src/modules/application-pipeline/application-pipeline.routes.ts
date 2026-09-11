@@ -24,6 +24,14 @@ applicationPipelineRouter.get(
   controller.getMyApplications
 );
 
+// Recruiter job application pipeline list
+applicationPipelineRouter.get(
+  '/jobs/:jobId',
+  authenticateToken,
+  requireRole('RECRUITER', 'SUPER_ADMIN'),
+  controller.getJobApplications
+);
+
 // View application detail
 applicationPipelineRouter.get(
   '/:id',

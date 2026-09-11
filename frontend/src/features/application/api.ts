@@ -45,4 +45,9 @@ export const applicationApi = {
     });
     return res.data.data;
   },
+
+  getJobApplications: async (jobId: string): Promise<any[]> => {
+    const res = await apiClient.get<{ data: any[] }>(`/v1/applications/jobs/${jobId}`);
+    return res.data.data;
+  },
 };

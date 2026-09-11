@@ -382,6 +382,83 @@ export class ApplicationService {
       message: 'Application has been successfully withdrawn.',
     };
   }
+
+  /**
+   * List all candidate applications for a specific job vacancy (Recruiter Pipeline)
+   */
+  async getJobApplications(jobId: string, userId: string, userRole: string) {
+    const job = await prisma.jobVacancy.findUnique({
+      where: { id: jobId },
+      include: { company: true },
+    });
+
+    if (!job) {
+      throw new NotFoundError('Job vacancy not found.');
+    }
+
+    if (userRole !== 'SUPER_ADMIN') {
+      const recruiterProfile = await prisma.recruiterProfile.findUnique({
+        where: { userId },
+      });
+      if (!recruiterProfile || recruiterProfile.companyId !== job.companyId) {
+        throw new ForbiddenError('You do not have permission to view applications for this job.');
+      }
+    }
+
+    const applications = await prisma.application.findMany({
+      where: { jobId },
+      orderBy: { appliedAt: 'desc' },
+      include: {
+        applicant: {
+          include: {
+            user: { select: { id: true, email: true } },
+          },
+        },
+        atsScore: true,
+        candidatePipelines: {
+          include: { stage: true },
+          orderBy: { movedAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    return applications.map((app) => {
+      const effectiveScore = app.atsScore?.manualOverrideScore
+        ? Number(app.atsScore.manualOverrideScore)
+        : app.atsScore?.overallScore
+        ? Number(app.atsScore.overallScore)
+        : 0;
+
+      let stageName = app.candidatePipelines[0]?.stage?.name;
+      if (!stageName) {
+        const statusMap: Record<string, string> = {
+          APPLIED: 'Applied',
+          SCREENING: 'Screening',
+          SHORTLISTED: 'Screening',
+          INTERVIEW: 'Interview',
+          OFFER: 'Offer',
+          HIRED: 'Offer',
+          REJECTED: 'Applied',
+          WITHDRAWN: 'Applied',
+        };
+        stageName = statusMap[app.status] || 'Applied';
+      }
+
+      return {
+        id: app.id,
+        applicationId: app.id,
+        name: `${app.applicant.firstName} ${app.applicant.lastName}`.trim() || 'Candidate',
+        role: app.applicant.headline || 'Software Engineer',
+        email: app.applicant.user.email,
+        score: effectiveScore,
+        scoreBand: app.atsScore?.scoreBand || 'MID',
+        status: app.status,
+        stage: stageName,
+        appliedAt: app.appliedAt.toISOString(),
+      };
+    });
+  }
 }
 
 export default new ApplicationService();

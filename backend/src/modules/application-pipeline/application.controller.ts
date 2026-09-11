@@ -63,6 +63,23 @@ export class ApplicationController {
       next(err);
     }
   }
+
+  /**
+   * GET /api/v1/applications/jobs/:jobId
+   * List all applications for a vacancy (Recruiter Pipeline)
+   */
+  async getJobApplications(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await applicationService.getJobApplications(
+        req.params.jobId,
+        req.user!.id,
+        req.user!.role
+      );
+      return res.status(200).json({ data: result, error: null });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export default new ApplicationController();

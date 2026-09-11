@@ -3,7 +3,8 @@ import { config } from '../config';
 
 export const apiRateLimiter = rateLimit({
   windowMs: config.RATE_LIMIT_WINDOW_MS,
-  max: config.RATE_LIMIT_MAX,
+  max: config.NODE_ENV === 'development' ? 50000 : config.RATE_LIMIT_MAX,
+  skip: () => config.NODE_ENV === 'development',
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -17,7 +18,8 @@ export const apiRateLimiter = rateLimit({
 
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // max 20 login/register attempts per IP
+  max: config.NODE_ENV === 'development' ? 5000 : 20, // max 20 login/register attempts per IP in production
+  skip: () => config.NODE_ENV === 'development',
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -28,3 +30,4 @@ export const authRateLimiter = rateLimit({
     },
   },
 });
+
