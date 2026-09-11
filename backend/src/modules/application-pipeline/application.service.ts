@@ -98,11 +98,24 @@ export class ApplicationService {
             (a) => a.questionId === q.id || a.question.trim().toLowerCase() === q.question.trim().toLowerCase()
           );
 
-          if (submitted) {
-            const reqNormalized = String(q.requiredAnswer).trim().toLowerCase();
-            const ansNormalized = String(submitted.answer).trim().toLowerCase();
+          if (submitted && submitted.answer !== undefined && submitted.answer !== null && String(submitted.answer).trim() !== '') {
+            const toBool = (val: string): boolean | null => {
+              const lower = val.trim().toLowerCase();
+              if (['true', 'yes', 'y', '1'].includes(lower)) return true;
+              if (['false', 'no', 'n', '0'].includes(lower)) return false;
+              return null;
+            };
 
-            if (reqNormalized !== ansNormalized) {
+            const reqBool = toBool(String(q.requiredAnswer));
+            const ansBool = toBool(String(submitted.answer));
+
+            const isMatch =
+              reqBool !== null && ansBool !== null
+                ? reqBool === ansBool
+                : String(q.requiredAnswer).trim().toLowerCase() ===
+                  String(submitted.answer).trim().toLowerCase();
+
+            if (!isMatch) {
               knockoutFailed = true;
               knockoutReason = `Knockout requirement not met for: "${q.question}". Expected "${q.requiredAnswer}", received "${submitted.answer}".`;
               initialStatus = ApplicationStatus.REJECTED;

@@ -259,15 +259,18 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
                   )}
                 </div>
 
-                {q.type === 'YES_NO' ? (
+                {q.type === 'YES_NO' || q.type === 'boolean' ? (
                   <div className="flex items-center gap-4 pt-1">
                     <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
                       <input
                         type="radio"
                         name={`question-${q.id}`}
                         value="YES"
-                        checked={screeningAnswers[q.id] === 'YES'}
-                        onChange={() => handleAnswerChange(q.id, 'YES')}
+                        checked={
+                          screeningAnswers[q.id]?.toUpperCase() === 'YES' ||
+                          screeningAnswers[q.id]?.toLowerCase() === 'true'
+                        }
+                        onChange={() => handleAnswerChange(q.id, 'true')}
                         className="text-brand-600 focus:ring-brand-500"
                       />
                       Yes
@@ -277,8 +280,11 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
                         type="radio"
                         name={`question-${q.id}`}
                         value="NO"
-                        checked={screeningAnswers[q.id] === 'NO'}
-                        onChange={() => handleAnswerChange(q.id, 'NO')}
+                        checked={
+                          screeningAnswers[q.id]?.toUpperCase() === 'NO' ||
+                          screeningAnswers[q.id]?.toLowerCase() === 'false'
+                        }
+                        onChange={() => handleAnswerChange(q.id, 'false')}
                         className="text-brand-600 focus:ring-brand-500"
                       />
                       No
