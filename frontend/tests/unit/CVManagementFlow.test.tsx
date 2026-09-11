@@ -27,6 +27,8 @@ const mockProfile: ApplicantProfileDto = {
     visibility: 'PUBLIC',
     allowRecruiterContact: true,
   },
+  createdAt: '2026-03-01T00:00:00Z',
+  updatedAt: '2026-03-01T00:00:00Z',
   completeness: {
     score: 95,
     personalInfo: true,
@@ -114,6 +116,7 @@ const mockResumes: CVDto[] = [
     templateName: 'TECHNICAL_ATS',
     parsingStatus: 'COMPLETED',
     parsedJson: {
+      contactInfo: { name: 'Alex Turner', email: 'alex@example.com' },
       detectedSkills: ['TypeScript', 'React', 'Node.js', 'PostgreSQL'],
       workExperience: [
         {
@@ -146,7 +149,10 @@ const mockResumes: CVDto[] = [
     createdFrom: 'UPLOAD',
     parsingStatus: 'COMPLETED',
     parsedJson: {
+      contactInfo: { name: 'Alex Turner', email: 'alex@example.com' },
       detectedSkills: ['React', 'TypeScript', 'TailwindCSS', 'Next.js'],
+      workExperience: [],
+      education: [],
     },
     createdAt: '2026-09-08T09:00:00.000Z',
     updatedAt: '2026-09-08T09:00:00.000Z',
@@ -166,7 +172,10 @@ const mockVersions: CVVersionDto[] = [
     createdFrom: 'BUILDER',
     templateName: 'TECHNICAL_ATS',
     parsedJson: {
+      contactInfo: { name: 'Alex Turner', email: 'alex@example.com' },
       detectedSkills: ['TypeScript', 'React', 'Node.js', 'PostgreSQL'],
+      workExperience: [],
+      education: [],
     },
     createdAt: '2026-09-10T12:00:00.000Z',
   },
@@ -182,7 +191,10 @@ const mockVersions: CVVersionDto[] = [
     createdFrom: 'BUILDER',
     templateName: 'MODERN_CLEAN',
     parsedJson: {
+      contactInfo: { name: 'Alex Turner', email: 'alex@example.com' },
       detectedSkills: ['TypeScript', 'React'],
+      workExperience: [],
+      education: [],
     },
     createdAt: '2026-09-10T10:00:00.000Z',
   },

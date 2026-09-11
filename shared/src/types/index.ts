@@ -865,5 +865,130 @@ export interface WithdrawApplicationDto {
   reason?: string;
 }
 
+// -------------------------------------------------------------
+// Recruiter Candidate Pipeline & Talent Sourcing (FR-RC-10 to FR-RC-16)
+// -------------------------------------------------------------
 
+export interface MoveCandidateStageDto {
+  stage: ApplicationStatus;
+  notes?: string;
+}
 
+export interface BulkMoveCandidateStageDto {
+  applicationIds: string[];
+  stage: ApplicationStatus;
+  notes?: string;
+}
+
+export interface CandidateNoteDto {
+  id: string;
+  applicationId: string;
+  authorId: string;
+  authorName: string;
+  authorEmail: string;
+  content: string;
+  rating?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCandidateNoteDto {
+  content: string;
+  rating?: number; // 1 to 5
+}
+
+export interface PipelineCandidateDto {
+  id: string; // applicationId
+  applicantId: string;
+  jobId: string;
+  jobTitle: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  headline?: string;
+  avatarUrl?: string | null;
+  location?: string;
+  status: ApplicationStatus;
+  appliedAt: string;
+  cvId?: string | null;
+  cvFileName?: string | null;
+  cvFileUrl?: string | null;
+  atsScore?: {
+    overallScore: number;
+    scoreBand: ScoreBand;
+    skillsScore: number;
+    experienceScore: number;
+    educationScore: number;
+    semanticTfidfScore: number;
+    certificationScore: number;
+    manualOverrideScore?: number | null;
+    overrideReason?: string | null;
+    topMatchingTerms?: string[];
+  } | null;
+  averageRating?: number | null;
+  notesCount: number;
+  lastNote?: {
+    authorName: string;
+    content: string;
+    createdAt: string;
+  } | null;
+  screeningAnswers?: ScreeningAnswerItem[];
+  mustHaveSkillsCount?: number;
+  matchedMustHaveSkillsCount?: number;
+}
+
+export interface CandidateComparisonItemDto {
+  applicationId: string;
+  candidateName: string;
+  candidateEmail?: string;
+  headline?: string;
+  avatarUrl?: string | null;
+  currentStage: ApplicationStatus;
+  appliedAt: string;
+  overallScore?: number;
+  manualOverrideScore?: number | null;
+  scoreBand?: ScoreBand;
+  subScores?: {
+    skillsScore?: number;
+    experienceScore?: number;
+    educationScore?: number;
+    semanticTfidfScore?: number;
+    certificationScore?: number;
+  };
+  skills: Array<{ name: string; isMatched: boolean; priority: SkillPriority }>;
+  yearsOfExperience?: number;
+  educationSummary?: string;
+  averageTeamRating?: number | null;
+  notesCount: number;
+}
+
+export interface CandidateComparisonResponseDto {
+  jobId: string;
+  jobTitle: string;
+  candidates: CandidateComparisonItemDto[];
+}
+
+export interface TalentPoolSearchParams {
+  search?: string;
+  skills?: string[];
+  location?: string;
+  minExperience?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface TalentPoolCandidateDto {
+  id: string; // applicant profile ID
+  fullName: string;
+  email?: string;
+  phone?: string;
+  headline?: string;
+  location?: string;
+  summary?: string;
+  avatarUrl?: string | null;
+  skills: Array<{ name: string; proficiencyLevel?: string; yearsExperience?: number }>;
+  experienceYears?: number;
+  isBlind: boolean;
+  cvUrl?: string | null;
+  profileVisibility: 'PUBLIC' | 'BLIND';
+}

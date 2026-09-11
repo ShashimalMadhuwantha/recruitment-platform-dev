@@ -172,6 +172,7 @@ model User {
   interviewFeedbacks  InterviewFeedback[] @relation("InterviewerFeedbacks")
   reportsCreated      ContentReport[]     @relation("ReportedByUser")
   gdprRequests        GdprRequest[]
+  candidateNotes      CandidateNote[]     @relation("UserCandidateNotes")
 
   @@map("users")
 }
@@ -532,6 +533,7 @@ model Application {
   cv                 CV?                 @relation(fields: [cvId], references: [id], onDelete: SetNull)
   atsScore           ATSScore?
   candidatePipelines CandidatePipeline[]
+  candidateNotes     CandidateNote[]
   interviewSchedules InterviewSchedule[]
 
   @@unique([applicantId, jobId])
@@ -620,6 +622,22 @@ model CandidatePipeline {
   stage       PipelineStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
 
   @@map("candidate_pipelines")
+}
+
+model CandidateNote {
+  id            String   @id @default(uuid())
+  applicationId String   @map("application_id")
+  authorId      String   @map("author_id")
+  content       String   @db.Text
+  rating        Int?     // Optional 1 to 5 star rating
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  author        User        @relation("UserCandidateNotes", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("candidate_notes")
 }
 
 model InterviewSchedule {

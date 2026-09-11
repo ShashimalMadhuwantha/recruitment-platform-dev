@@ -259,7 +259,7 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
                   )}
                 </div>
 
-                {q.type === 'YES_NO' || q.type === 'boolean' ? (
+                {(q.type as string) === 'YES_NO' || (q.type as string) === 'boolean' ? (
                   <div className="flex items-center gap-4 pt-1">
                     <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
                       <input

@@ -106,6 +106,12 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             >
               Pipeline
             </Link>
+            <Link
+              to="/recruiter/talent-pool"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Talent Pool
+            </Link>
           </nav>
         )}
 
