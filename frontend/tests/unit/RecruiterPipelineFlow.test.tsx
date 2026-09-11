@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -349,6 +349,20 @@ describe('Frontend Recruiter Candidate Pipeline & Talent Sourcing Flow (FR-RC-10
     expect(screen.getByText(/2 candidates selected/i)).toBeInTheDocument();
     expect(screen.getByText(/Compare \(2\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Export CSV/i)).toBeInTheDocument();
+
+    // Test stage move popover
+    const moveBtn = screen.getByRole('button', { name: /Move to Stage/i });
+    fireEvent.click(moveBtn);
+    const popoverHeading = screen.getByText('Select Target Stage');
+    expect(popoverHeading).toBeInTheDocument();
+    const popoverContainer = popoverHeading.closest('div')!;
+    const interviewOption = within(popoverContainer).getByRole('button', { name: /Interview/i });
+    fireEvent.click(interviewOption);
+    expect(mockBulkMove).toHaveBeenCalledWith({
+      applicationIds: ['app-1', 'app-2'],
+      stage: 'INTERVIEW',
+      notes: 'Bulk moved to INTERVIEW',
+    });
   });
 
   it('4. Opens CandidateDetailDrawer and submits internal team note with star rating', async () => {
