@@ -112,6 +112,26 @@ export class ResumeParserService {
         },
       });
 
+      // Snapshot initial version in CVVersion
+      try {
+        await prisma.cVVersion.create({
+          data: {
+            cvId: cv.id,
+            versionNumber: 1,
+            versionLabel: updatedCv.versionLabel || 'v1',
+            fileRef: filePath,
+            fileName,
+            fileSize,
+            mimeType,
+            parsedText: updatedCv.parsedText,
+            parsedJson: updatedCv.parsedJson as any,
+            createdFrom: 'UPLOAD',
+          },
+        });
+      } catch (verErr) {
+        console.error('Failed to create initial CVVersion snapshot:', verErr);
+      }
+
       // Complete background job
       await prisma.backgroundJob.update({
         where: { id: backgroundJob.id },
@@ -670,6 +690,129 @@ export class ResumeParserService {
     }
 
     return { success: true, message: 'Profile successfully enriched with resume data' };
+  }
+
+  /**
+   * Selectively sync parsed resume entities into applicant profile with confirmation (FR-AP-12)
+   */
+  async syncResumeSelective(
+    userId: string,
+    cvId: string,
+    payload: {
+      updateHeadline?: boolean;
+      updateSummary?: boolean;
+      selectedSkillNames?: string[];
+      importExperiences?: boolean;
+      importEducations?: boolean;
+    }
+  ) {
+    const cv = await prisma.cV.findUnique({
+      where: { id: cvId },
+      include: { applicant: true },
+    });
+
+    if (!cv || cv.applicant.userId !== userId) {
+      throw new Error('Resume not found or unauthorized');
+    }
+
+    const parsed = cv.parsedJson as ParsedResumeData | null;
+    if (!parsed) {
+      throw new Error('Resume has not been parsed yet');
+    }
+
+    const applicant = cv.applicant;
+    const profileUpdate: any = {};
+
+    if (payload.updateHeadline && parsed.workExperience?.[0]?.title) {
+      profileUpdate.headline = parsed.workExperience[0].title;
+    }
+    if (payload.updateSummary && parsed.summary) {
+      profileUpdate.summary = parsed.summary;
+    }
+
+    if (Object.keys(profileUpdate).length > 0) {
+      await prisma.applicantProfile.update({
+        where: { id: applicant.id },
+        data: profileUpdate,
+      });
+    }
+
+    // Selected skills sync
+    let importedSkillsCount = 0;
+    const skillsToImport = payload.selectedSkillNames || [];
+    if (skillsToImport.length > 0) {
+      const existingSkills = await prisma.applicantSkill.findMany({
+        where: { applicantId: applicant.id },
+        select: { skillId: true },
+      });
+      const existingIds = new Set(existingSkills.map((s) => s.skillId));
+
+      for (const skillName of skillsToImport) {
+        const skill = await prisma.skill.upsert({
+          where: { name: skillName.trim() },
+          update: {},
+          create: { name: skillName.trim(), category: 'Technical' },
+        });
+
+        if (!existingIds.has(skill.id)) {
+          await prisma.applicantSkill.create({
+            data: {
+              applicantId: applicant.id,
+              skillId: skill.id,
+              proficiency: 3,
+              yearsExperience: 2.0,
+            },
+          });
+          existingIds.add(skill.id);
+          importedSkillsCount++;
+        }
+      }
+    }
+
+    // Work experiences import
+    let importedExperiencesCount = 0;
+    if (payload.importExperiences && parsed.workExperience && parsed.workExperience.length > 0) {
+      for (const exp of parsed.workExperience) {
+        await prisma.workExperience.create({
+          data: {
+            applicantId: applicant.id,
+            companyName: exp.company || 'Enterprise Company',
+            title: exp.title || 'Software Engineer',
+            startDate: exp.startDate ? new Date(exp.startDate) : new Date('2022-01-01'),
+            endDate: exp.endDate ? new Date(exp.endDate) : null,
+            isCurrent: !exp.endDate,
+            description: exp.description || null,
+          },
+        });
+        importedExperiencesCount++;
+      }
+    }
+
+    // Educations import
+    let importedEducationsCount = 0;
+    if (payload.importEducations && parsed.education && parsed.education.length > 0) {
+      for (const edu of parsed.education) {
+        await prisma.education.create({
+          data: {
+            applicantId: applicant.id,
+            institution: edu.institution || 'University',
+            degree: edu.degree || 'Bachelor of Science',
+            fieldOfStudy: edu.fieldOfStudy || null,
+            startDate: edu.startDate ? new Date(edu.startDate) : null,
+            endDate: edu.endDate ? new Date(edu.endDate) : null,
+          },
+        });
+        importedEducationsCount++;
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Selected resume items synchronized to profile successfully.',
+      importedSkillsCount,
+      importedExperiencesCount,
+      importedEducationsCount,
+    };
   }
 
   private escapeRegex(str: string): string {

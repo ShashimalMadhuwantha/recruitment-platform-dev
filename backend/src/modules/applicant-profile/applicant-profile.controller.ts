@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { applicantProfileService } from './applicant-profile.service';
 import { resumeParserService } from './resume-parser.service';
+import { CvBuilderService } from './cv-builder.service';
+import { CvVersionService } from './cv-version.service';
 import {
   updateProfileSchema,
   experienceSchema,
@@ -336,6 +338,83 @@ export class ApplicantProfileController {
       return res.status(200).json({ data: result, error: null });
     } catch (error: any) {
       return res.status(400).json({ data: null, error: { message: error.message, code: 'AUTOFILL_FAILED' } });
+    }
+  }
+
+  // ==========================================
+  // Epic 9: CV Builder, Versions & Selective Sync
+  // ==========================================
+  async buildResume(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const cv = await CvBuilderService.buildAndSaveCv(userId, req.body);
+      return res.status(201).json({ data: cv, error: null });
+    } catch (error: any) {
+      return res.status(400).json({ data: null, error: { message: error.message, code: 'BUILD_FAILED' } });
+    }
+  }
+
+  async downloadResume(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const downloadInfo = await CvVersionService.getDownloadInfo(req.params.id, userId);
+      return res.download(downloadInfo.filePath, downloadInfo.fileName);
+    } catch (error: any) {
+      return res.status(404).json({ data: null, error: { message: error.message, code: 'FILE_NOT_FOUND' } });
+    }
+  }
+
+  async listVersions(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const versions = await CvVersionService.listVersions(req.params.id, userId);
+      return res.status(200).json({ data: versions, error: null });
+    } catch (error: any) {
+      return res.status(400).json({ data: null, error: { message: error.message, code: 'BAD_REQUEST' } });
+    }
+  }
+
+  async restoreVersion(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const cv = await CvVersionService.restoreVersion(req.params.id, req.params.versionId, userId);
+      return res.status(200).json({ data: cv, error: null });
+    } catch (error: any) {
+      return res.status(400).json({ data: null, error: { message: error.message, code: 'RESTORE_FAILED' } });
+    }
+  }
+
+  async updateCVLabel(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const versionLabel = req.body.versionLabel;
+      if (!versionLabel || !versionLabel.trim()) {
+        return res.status(400).json({ data: null, error: { message: 'Version label is required', code: 'INVALID_INPUT' } });
+      }
+      const cv = await CvVersionService.updateLabel(req.params.id, versionLabel, userId);
+      return res.status(200).json({ data: cv, error: null });
+    } catch (error: any) {
+      return res.status(400).json({ data: null, error: { message: error.message, code: 'UPDATE_FAILED' } });
+    }
+  }
+
+  async duplicateCV(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const cv = await CvVersionService.duplicateCv(req.params.id, userId);
+      return res.status(201).json({ data: cv, error: null });
+    } catch (error: any) {
+      return res.status(400).json({ data: null, error: { message: error.message, code: 'DUPLICATE_FAILED' } });
+    }
+  }
+
+  async syncSelective(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const result = await resumeParserService.syncResumeSelective(userId, req.params.id, req.body);
+      return res.status(200).json({ data: result, error: null });
+    } catch (error: any) {
+      return res.status(400).json({ data: null, error: { message: error.message, code: 'SYNC_FAILED' } });
     }
   }
 

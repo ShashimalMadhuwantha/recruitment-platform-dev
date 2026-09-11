@@ -8,6 +8,9 @@ import type {
   CertificationDto,
   PortfolioDto,
   CVDto,
+  CVVersionDto,
+  CVBuilderRequestDto,
+  SelectiveSyncDto,
   AnonymizedProfileDto,
   SkillMaster,
 } from './types';
@@ -142,6 +145,59 @@ export const applicantProfileApi = {
       `/v1/applicant/resume/${cvId}/apply-to-profile`
     );
     return res.data.data;
+  },
+
+  // Epic 9: Builder, Versions & Selective Sync
+  buildResume: async (data: CVBuilderRequestDto): Promise<CVDto> => {
+    const res = await apiClient.post<{ data: CVDto }>('/v1/applicant/resume/build', data);
+    return res.data.data;
+  },
+
+  getCVVersions: async (cvId: string): Promise<CVVersionDto[]> => {
+    const res = await apiClient.get<{ data: CVVersionDto[] }>(`/v1/applicant/resume/${cvId}/versions`);
+    return res.data.data;
+  },
+
+  restoreCVVersion: async (cvId: string, versionId: string): Promise<CVDto> => {
+    const res = await apiClient.post<{ data: CVDto }>(
+      `/v1/applicant/resume/${cvId}/versions/${versionId}/restore`
+    );
+    return res.data.data;
+  },
+
+  updateCVLabel: async (cvId: string, versionLabel: string): Promise<CVDto> => {
+    const res = await apiClient.put<{ data: CVDto }>(`/v1/applicant/resume/${cvId}/label`, { versionLabel });
+    return res.data.data;
+  },
+
+  duplicateCV: async (cvId: string): Promise<CVDto> => {
+    const res = await apiClient.post<{ data: CVDto }>(`/v1/applicant/resume/${cvId}/duplicate`);
+    return res.data.data;
+  },
+
+  syncResumeSelective: async (
+    cvId: string,
+    data: SelectiveSyncDto
+  ): Promise<{ success: boolean; message: string }> => {
+    const res = await apiClient.post<{ data: { success: boolean; message: string } }>(
+      `/v1/applicant/resume/${cvId}/sync-selective`,
+      data
+    );
+    return res.data.data;
+  },
+
+  downloadResumeBlob: async (cvId: string, fallbackFileName?: string): Promise<void> => {
+    const res = await apiClient.get(`/v1/applicant/resume/${cvId}/download`, {
+      responseType: 'blob',
+    });
+    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fallbackFileName || 'Resume.pdf');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
   },
 
   // Blind Recruitment Anonymized Preview

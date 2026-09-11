@@ -539,6 +539,24 @@ export interface ParsedResumeData {
   rawTextPreview?: string;
 }
 
+export type CVTemplateType = 'MODERN_CLEAN' | 'TECHNICAL_ATS' | 'EXECUTIVE_CLASSIC';
+
+export interface CVVersionDto {
+  id: string;
+  cvId: string;
+  versionNumber: number;
+  versionLabel: string;
+  fileRef: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  parsedText?: string | null;
+  parsedJson?: ParsedResumeData | null;
+  createdFrom: 'UPLOAD' | 'BUILDER' | 'RESTORE' | string;
+  templateName?: string | null;
+  createdAt: string;
+}
+
 export interface CVDto {
   id: string;
   applicantId: string;
@@ -551,7 +569,44 @@ export interface CVDto {
   versionLabel?: string | null;
   isPrimary: boolean;
   parsingStatus?: string | null;
+  createdFrom?: string | null;
+  templateName?: string | null;
   createdAt: string;
+  updatedAt?: string;
+  versions?: CVVersionDto[];
+}
+
+export interface CVBuilderRequestDto {
+  template: CVTemplateType;
+  versionLabel: string;
+  targetCvId?: string;
+  includedSections: {
+    summary: boolean;
+    skills: boolean;
+    experience: boolean;
+    education: boolean;
+    certifications: boolean;
+    portfolio?: boolean;
+  };
+  selectedSkillIds?: string[];
+  selectedExperienceIds?: string[];
+  selectedEducationIds?: string[];
+  selectedCertificationIds?: string[];
+  customHeadline?: string;
+  customSummary?: string;
+  makePrimary?: boolean;
+}
+
+export interface SelectiveSyncDto {
+  updateHeadline?: boolean;
+  updateSummary?: boolean;
+  selectedSkillNames?: string[];
+  importExperiences?: boolean;
+  importEducations?: boolean;
+}
+
+export interface UpdateCVLabelDto {
+  versionLabel: string;
 }
 
 export interface ApplicantProfileDto {

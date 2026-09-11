@@ -17,10 +17,6 @@ import {
   useAddPortfolio,
   useDeletePortfolio,
   useResumes,
-  useUploadResume,
-  useDeleteResume,
-  useSetPrimaryResume,
-  useApplyResumeToProfile,
   useAnonymizedPreview,
   useTaxonomySkills,
 } from '../../features/applicant-profile/hooks';
@@ -31,7 +27,7 @@ import { EducationSection } from '../../features/applicant-profile/components/Ed
 import { SkillsSection } from '../../features/applicant-profile/components/SkillsSection';
 import { CertificationsSection } from '../../features/applicant-profile/components/CertificationsSection';
 import { PortfolioSection } from '../../features/applicant-profile/components/PortfolioSection';
-import { ResumeUploader } from '../../features/applicant-profile/components/ResumeUploader';
+import { CVManager } from '../../features/applicant-profile/components/CVManager';
 import { PrivacySettingsSection } from '../../features/applicant-profile/components/PrivacySettingsSection';
 import { BlindRecruitmentPreviewModal } from '../../features/applicant-profile/components/BlindRecruitmentPreviewModal';
 import { Button } from '../../components/ui/Button';
@@ -62,10 +58,6 @@ export const ApplicantProfilePage: React.FC = () => {
   const deleteCertMutation = useDeleteCertification();
   const addPortfolioMutation = useAddPortfolio();
   const deletePortfolioMutation = useDeletePortfolio();
-  const uploadResumeMutation = useUploadResume();
-  const deleteResumeMutation = useDeleteResume();
-  const setPrimaryResumeMutation = useSetPrimaryResume();
-  const applyResumeMutation = useApplyResumeToProfile();
 
   const setTab = (tab: ProfileTab) => {
     setSearchParams({ tab });
@@ -210,13 +202,9 @@ export const ApplicantProfilePage: React.FC = () => {
         )}
 
         {activeTab === 'resume' && (
-          <ResumeUploader
+          <CVManager
+            profile={profile}
             resumes={resumes.length > 0 ? resumes : profile.cvs}
-            onUpload={(data) => uploadResumeMutation.mutateAsync(data)}
-            onDelete={(id) => deleteResumeMutation.mutateAsync(id)}
-            onSetPrimary={(id) => setPrimaryResumeMutation.mutateAsync(id)}
-            onApplyToProfile={(cvId) => applyResumeMutation.mutateAsync(cvId)}
-            isUploading={uploadResumeMutation.isPending}
           />
         )}
 

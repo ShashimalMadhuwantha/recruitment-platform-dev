@@ -134,7 +134,7 @@ applicantProfileRouter.delete(
 );
 
 // ========================================================
-// 6. Resume Upload & Management Endpoints
+// 6. Resume Upload & Management Endpoints (Epic 9)
 // ========================================================
 applicantProfileRouter.post(
   '/resume',
@@ -143,10 +143,52 @@ applicantProfileRouter.post(
   (req, res) => applicantProfileController.uploadResume(req, res)
 );
 
+applicantProfileRouter.post(
+  '/resume/build',
+  requireRole('APPLICANT', 'SUPER_ADMIN'),
+  (req, res) => applicantProfileController.buildResume(req, res)
+);
+
 applicantProfileRouter.get(
   '/resume',
   requireRole('APPLICANT', 'SUPER_ADMIN'),
   (req, res) => applicantProfileController.listResumes(req, res)
+);
+
+applicantProfileRouter.get(
+  '/resume/:id/download',
+  requireRole('APPLICANT', 'SUPER_ADMIN', 'RECRUITER'),
+  (req, res) => applicantProfileController.downloadResume(req, res)
+);
+
+applicantProfileRouter.get(
+  '/resume/:id/versions',
+  requireRole('APPLICANT', 'SUPER_ADMIN'),
+  (req, res) => applicantProfileController.listVersions(req, res)
+);
+
+applicantProfileRouter.post(
+  '/resume/:id/versions/:versionId/restore',
+  requireRole('APPLICANT', 'SUPER_ADMIN'),
+  (req, res) => applicantProfileController.restoreVersion(req, res)
+);
+
+applicantProfileRouter.put(
+  '/resume/:id/label',
+  requireRole('APPLICANT', 'SUPER_ADMIN'),
+  (req, res) => applicantProfileController.updateCVLabel(req, res)
+);
+
+applicantProfileRouter.post(
+  '/resume/:id/duplicate',
+  requireRole('APPLICANT', 'SUPER_ADMIN'),
+  (req, res) => applicantProfileController.duplicateCV(req, res)
+);
+
+applicantProfileRouter.post(
+  '/resume/:id/sync-selective',
+  requireRole('APPLICANT', 'SUPER_ADMIN'),
+  (req, res) => applicantProfileController.syncSelective(req, res)
 );
 
 applicantProfileRouter.get(

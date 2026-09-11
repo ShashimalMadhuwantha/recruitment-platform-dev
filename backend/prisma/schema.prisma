@@ -418,12 +418,37 @@ model CV {
   versionLabel  String?  @default("v1") @map("version_label")
   isPrimary     Boolean  @default(false) @map("is_primary")
   parsingStatus String?  @default("COMPLETED") @map("parsing_status")
+  createdFrom   String?  @default("UPLOAD") @map("created_from")
+  templateName  String?  @map("template_name")
   createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
 
   applicant    ApplicantProfile @relation(fields: [applicantId], references: [id], onDelete: Cascade)
   applications Application[]
+  versions     CVVersion[]
 
   @@map("cvs")
+}
+
+model CVVersion {
+  id            String   @id @default(uuid())
+  cvId          String   @map("cv_id")
+  versionNumber Int      @map("version_number")
+  versionLabel  String   @map("version_label")
+  fileRef       String   @map("file_ref")
+  fileName      String   @map("file_name")
+  fileSize      Int      @map("file_size")
+  mimeType      String   @default("application/pdf") @map("mime_type")
+  parsedText    String?  @map("parsed_text") @db.LongText
+  parsedJson    Json?    @map("parsed_json")
+  createdFrom   String   @default("UPLOAD") @map("created_from")
+  templateName  String?  @map("template_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  cv            CV       @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@index([cvId])
+  @@map("cv_versions")
 }
 
 // -------------------------------------------------------------

@@ -7,6 +7,8 @@ import type {
   EducationDto,
   CertificationDto,
   PortfolioDto,
+  CVBuilderRequestDto,
+  SelectiveSyncDto,
 } from './types';
 
 export const useApplicantProfile = () => {
@@ -239,6 +241,76 @@ export const useApplyResumeToProfile = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applicant-profile'] });
       queryClient.invalidateQueries({ queryKey: ['anonymized-preview'] });
+    },
+  });
+};
+
+// Epic 9: CV Builder, Versions & Selective Sync Hooks
+export const useCVVersions = (cvId?: string, enabled = true) => {
+  return useQuery({
+    queryKey: ['cv-versions', cvId],
+    queryFn: () => applicantProfileApi.getCVVersions(cvId!),
+    enabled: !!cvId && enabled,
+  });
+};
+
+export const useBuildCV = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CVBuilderRequestDto) => applicantProfileApi.buildResume(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicant-resumes'] });
+      queryClient.invalidateQueries({ queryKey: ['applicant-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['cv-versions'] });
+    },
+  });
+};
+
+export const useRestoreCVVersion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cvId, versionId }: { cvId: string; versionId: string }) =>
+      applicantProfileApi.restoreCVVersion(cvId, versionId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['applicant-resumes'] });
+      queryClient.invalidateQueries({ queryKey: ['applicant-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['cv-versions', variables.cvId] });
+    },
+  });
+};
+
+export const useUpdateCVLabel = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cvId, versionLabel }: { cvId: string; versionLabel: string }) =>
+      applicantProfileApi.updateCVLabel(cvId, versionLabel),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['applicant-resumes'] });
+      queryClient.invalidateQueries({ queryKey: ['applicant-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['cv-versions', variables.cvId] });
+    },
+  });
+};
+
+export const useDuplicateCV = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (cvId: string) => applicantProfileApi.duplicateCV(cvId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicant-resumes'] });
+      queryClient.invalidateQueries({ queryKey: ['applicant-profile'] });
+    },
+  });
+};
+
+export const useSyncResumeSelective = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cvId, data }: { cvId: string; data: SelectiveSyncDto }) =>
+      applicantProfileApi.syncResumeSelective(cvId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicant-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['applicant-resumes'] });
     },
   });
 };
