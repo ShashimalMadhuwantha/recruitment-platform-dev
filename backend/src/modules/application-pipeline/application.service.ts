@@ -1,17 +1,16 @@
-import { PrismaClient, ApplicationStatus, Prisma } from '@prisma/client';
+import { ApplicationStatus, Prisma } from '@prisma/client';
 import {
   NotFoundError,
   BadRequestError,
   ForbiddenError,
 } from '../../middleware/error.middleware';
 import { AtsScoringService } from '../ats-scoring/ats-scoring.service';
+import { prisma } from '../../db/client';
 import type {
   SubmitApplicationDto,
   ApplicantApplicationListItem,
   ScreeningQuestion,
 } from '@recruitment-platform/shared';
-
-const prisma = new PrismaClient();
 
 export class ApplicationService {
   /**
@@ -252,7 +251,7 @@ export class ApplicationService {
         ? Number(app.atsScore.overallScore)
         : null;
 
-      const terminalStatuses = [
+      const terminalStatuses: ApplicationStatus[] = [
         ApplicationStatus.HIRED,
         ApplicationStatus.REJECTED,
         ApplicationStatus.WITHDRAWN,
@@ -339,7 +338,7 @@ export class ApplicationService {
       throw new ForbiddenError('You can only withdraw your own applications.');
     }
 
-    const terminalStatuses = [
+    const terminalStatuses: ApplicationStatus[] = [
       ApplicationStatus.HIRED,
       ApplicationStatus.REJECTED,
       ApplicationStatus.WITHDRAWN,

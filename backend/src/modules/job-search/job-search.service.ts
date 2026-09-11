@@ -1,8 +1,9 @@
-import { PrismaClient, JobStatus, Prisma, EmploymentType } from '@prisma/client';
+import { JobStatus, Prisma, EmploymentType } from '@prisma/client';
 import {
   NotFoundError,
   BadRequestError,
 } from '../../middleware/error.middleware';
+import { prisma } from '../../db/client';
 import type {
   JobSearchFilters,
   PublicJobListItem,
@@ -10,8 +11,6 @@ import type {
   SavedJobDto,
   ScreeningQuestion,
 } from '@recruitment-platform/shared';
-
-const prisma = new PrismaClient();
 
 export class JobSearchService {
   /**
