@@ -263,6 +263,19 @@
 
 ---
 
+## Epic 18 — Applicant: Company Discovery & Employer Profile Hub
+**Goal:** Empower job seekers to discover employers, explore authentic employer branding (office locations, workplace culture photos/videos, company bio, social presence), and browse company-specific active vacancies with predicted ATS match scores (FR-AP-31 to FR-AP-35, FR-RC-01).
+
+| Task | Purpose | Branch |
+|---|---|---|
+| Public company directory & search | Give applicants a searchable directory of hiring companies with industry, location, size, and active job count filters (FR-AP-31). | `feature/18-company-directory-search` |
+| Rich employer branding profile view | Build public company profile page showcasing cover photo, logo, bio, culture gallery, office directory, and social links (FR-AP-32). | `feature/18-employer-branding-profile` |
+| Company-specific active job listings | Display all active openings for a selected company with real-time ATS match prediction and one-click application initiation (FR-AP-33). | `feature/18-company-active-jobs` |
+| Cross-platform company links | Link company names/logos from job search results, job detail pages, and applicant tracking dashboard to company profiles (FR-AP-34). | `feature/18-cross-platform-company-navigation` |
+| Company follow & vacancy alert engine | Let applicants follow favorite companies and receive notifications when new requisitions are published (FR-AP-35). | `feature/18-company-follow-alerts` |
+
+---
+
 ## Suggested build order
 1. **Epic 0 → Epic 1** (setup + auth) — nothing else can start without these.
 2. **Epic 8 → Epic 9** (applicant profile + CV) and **Epic 6** (recruiter job posting) can run in parallel once auth is done — they produce the data the ATS engine needs.
@@ -272,4 +285,5 @@
 6. **Epic 12 → Epic 13 → Epic 14** (communication, offers, analytics) — later-stage polish, once the core apply/hire loop works.
 7. **Epic 15** and **Epic 16** — ongoing, with a final hardening pass before launch.
 8. **Epic 17** (recruiter company, team & plan seat management) — tenant organization governance, multi-recruiter sub-roles, and seat limits aligned to the company's subscription plan.
+9. **Epic 18** (applicant company discovery & employer profile hub) — public company directory, rich employer branding pages, and company-specific vacancy discovery for job seekers.
 

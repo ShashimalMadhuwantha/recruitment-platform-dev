@@ -241,6 +241,13 @@ A **single deployable backend (modular monolith)** is recommended over microserv
 - FR-AP-29: Download all personal data (data portability) / request account deletion (GDPR).
 - FR-AP-30: Block specific companies from viewing profile.
 
+### 3.3.7 Company Discovery & Employer Profiles
+- FR-AP-31: Browse and discover verified hiring companies with search and filters (industry, company size, office location, active openings).
+- FR-AP-32: View rich public company profile pages showcasing employer branding (cover banner, logo, company bio, workplace culture media gallery, multi-office locations, social media links, and workplace benefits/perks).
+- FR-AP-33: Browse all active published job openings for a specific company with real-time predicted ATS match scores and direct 1-click apply links.
+- FR-AP-34: Navigate seamlessly to company profiles from job search listings, job detail pages, and candidate application tracker cards.
+- FR-AP-35: Follow / bookmark companies to receive instant notification alerts when new job openings or career updates are published.
+
 ---
 
 ## 4. ATS Score Prediction Engine — Detailed Specification
