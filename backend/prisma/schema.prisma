@@ -193,6 +193,7 @@ model User {
   gdprRequests        GdprRequest[]
   candidateNotes      CandidateNote[]     @relation("UserCandidateNotes")
   sentTeamInvitations TeamInvitation[]    @relation("SentTeamInvitations")
+  followedCompanies   CompanyFollow[]     @relation("ApplicantCompanyFollows")
 
   @@map("users")
 }
@@ -323,6 +324,7 @@ model Company {
   scoreWeightConfigs ScoreWeightConfig[]
   diversitySurveyResponses DiversitySurveyResponse[]
   teamInvitations    TeamInvitation[]
+  followers          CompanyFollow[]     @relation("CompanyFollowers")
 
   @@map("companies")
 }
@@ -1003,5 +1005,24 @@ model DiversitySurveyResponse {
 
   @@index([companyId, jobId])
   @@map("diversity_survey_responses")
+}
+
+// -------------------------------------------------------------
+// Company Follows (FR-AP-35)
+// Enables applicants to follow employers for updates and alerts
+// -------------------------------------------------------------
+model CompanyFollow {
+  id          String   @id @default(uuid())
+  applicantId String   @map("applicant_id")
+  companyId   String   @map("company_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  applicant   User     @relation("ApplicantCompanyFollows", fields: [applicantId], references: [id], onDelete: Cascade)
+  company     Company  @relation("CompanyFollowers", fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([applicantId, companyId], name: "unique_applicant_company_follow")
+  @@index([applicantId])
+  @@index([companyId])
+  @@map("company_follows")
 }
 

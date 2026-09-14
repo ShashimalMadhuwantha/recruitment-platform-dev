@@ -11,6 +11,8 @@ import ApplicantDashboardPage from '../pages/applicant/ApplicantDashboardPage';
 import ApplicantProfilePage from '../pages/applicant/ApplicantProfilePage';
 import JobSearchPage from '../pages/applicant/JobSearchPage';
 import JobDetailPage from '../pages/applicant/JobDetailPage';
+import CompanyDirectoryPage from '../pages/applicant/CompanyDirectoryPage';
+import CompanyPublicProfilePage from '../pages/applicant/CompanyPublicProfilePage';
 import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
 import RecruiterJobsPage from '../pages/recruiter/RecruiterJobsPage';
 import JobCreationWizardPage from '../pages/recruiter/JobCreationWizardPage';
@@ -43,6 +45,8 @@ export const AppRouter: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/jobs" element={<JobSearchPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />
+          <Route path="/companies" element={<CompanyDirectoryPage />} />
+          <Route path="/companies/:idOrSlug" element={<CompanyPublicProfilePage />} />
           <Route path="/auth/login" element={<LoginPage />} />
           <Route path="/auth/register" element={<RegisterPage />} />
           <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
