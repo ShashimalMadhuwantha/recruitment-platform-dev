@@ -845,6 +845,8 @@ export interface ApplicantApplicationListItem {
   overallScore?: number | null;
   scoreBand?: ScoreBand | null;
   canWithdraw: boolean;
+  jobOffer?: JobOfferDto | null;
+  atsScore?: AtsScoreDetailDto | null;
 }
 
 export interface SavedJobDto {
@@ -935,6 +937,7 @@ export interface PipelineCandidateDto {
   screeningAnswers?: ScreeningAnswerItem[];
   mustHaveSkillsCount?: number;
   matchedMustHaveSkillsCount?: number;
+  jobOffer?: JobOfferDto | null;
 }
 
 export interface CandidateComparisonItemDto {
@@ -1097,6 +1100,10 @@ export type NotificationType =
   | 'INTERVIEW_SCHEDULED'
   | 'INTERVIEW_CANCELLED'
   | 'FEEDBACK_SUBMITTED'
+  | 'JOB_OFFER_RECEIVED'
+  | 'OFFER_ACCEPTED'
+  | 'OFFER_DECLINED'
+  | 'CANDIDATE_HIRED'
   | 'SYSTEM_ALERT';
 
 export interface NotificationDto {
@@ -1110,5 +1117,116 @@ export interface NotificationDto {
   isRead: boolean;
   readAt?: string | null;
   createdAt: string;
+}
+
+// =============================================================
+// Epic 13: Offers, Hiring & Applicant Career Tools
+// =============================================================
+
+export type OfferStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
+
+export interface JobOfferDto {
+  id: string;
+  applicationId: string;
+  jobId: string;
+  jobTitle: string;
+  companyId?: string;
+  companyName: string;
+  candidateId: string;
+  candidateName: string;
+  candidateEmail: string;
+  createdById: string;
+  creatorName?: string;
+  baseSalary: number;
+  currency: string;
+  bonus?: number | null;
+  equity?: string | null;
+  startDate: string;
+  expirationDate: string;
+  offerLetterText?: string | null;
+  benefitsSummary?: string | null;
+  notes?: string | null;
+  status: OfferStatus;
+  declinedReason?: string | null;
+  sentAt?: string | null;
+  respondedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateOfferDto {
+  baseSalary: number;
+  currency?: string;
+  bonus?: number;
+  equity?: string;
+  startDate: string;
+  expirationDate: string;
+  offerLetterText?: string;
+  benefitsSummary?: string;
+  notes?: string;
+  autoSend?: boolean; // if true, status set to SENT immediately
+}
+
+export interface RespondOfferDto {
+  action: 'ACCEPT' | 'DECLINE';
+  declinedReason?: string;
+  signedName?: string;
+}
+
+export interface HireCandidateDto {
+  closeRequisition?: boolean; // if true, sets JobVacancy status to FILLED
+  hireDate?: string;
+  notes?: string;
+}
+
+export interface CvHealthIssueDto {
+  id: string;
+  category: 'COMPLETENESS' | 'CONTENT_QUALITY' | 'IMPACT_METRICS' | 'FORMATTING';
+  severity: 'CRITICAL' | 'WARNING' | 'SUGGESTION' | 'PASSED';
+  title: string;
+  description: string;
+  recommendation: string;
+}
+
+export interface CvHealthCheckResultDto {
+  healthScore: number; // 0 to 100
+  grade: 'EXCELLENT' | 'GOOD' | 'NEEDS_IMPROVEMENT' | 'CRITICAL';
+  wordCount: number;
+  actionVerbCount: number;
+  quantifiableMetricsCount: number;
+  bulletPointsCount: number;
+  sectionChecks: {
+    contactInfo: boolean;
+    summary: boolean;
+    experience: boolean;
+    education: boolean;
+    skills: boolean;
+  };
+  topKeywords: Array<{ word: string; count: number; densityPercent: number }>;
+  issues: CvHealthIssueDto[];
+  passedChecksCount: number;
+  criticalIssuesCount: number;
+  warningsCount: number;
+  analyzedAt: string;
+}
+
+export interface ProfileImprovementSuggestionDto {
+  id: string;
+  category: 'SKILL_GAP' | 'EXPERIENCE_CLARITY' | 'HEADLINE_OPTIMIZATION' | 'EDUCATION_CERT';
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  title: string;
+  description: string;
+  marketDemandPercent?: number; // e.g. 75% of target jobs require this
+  actionLabel: string;
+  actionType: 'ADD_SKILL' | 'EDIT_SUMMARY' | 'ADD_EXPERIENCE' | 'ADD_CERTIFICATION';
+  metadata?: Record<string, any>;
+}
+
+export interface ProfileImprovementResponseDto {
+  overallReadinessScore: number;
+  targetJobsAnalyzedCount: number;
+  topMissingSkills: Array<{ name: string; frequency: number; priority: 'HIGH' | 'MEDIUM' | 'LOW' }>;
+  suggestions: ProfileImprovementSuggestionDto[];
+  generatedAt: string;
 }
 

@@ -103,6 +103,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                           <p className="text-[11px] text-text-secondary line-clamp-1 mt-0.5">
                             {candidate.headline || 'Applicant'}
                           </p>
+                          {candidate.jobOffer && (
+                            <span
+                              className={`inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                                candidate.jobOffer.status === 'ACCEPTED'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                  : candidate.jobOffer.status === 'SENT'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-300'
+                                  : candidate.jobOffer.status === 'DECLINED'
+                                  ? 'bg-rose-50 text-rose-700 border-rose-300'
+                                  : 'bg-amber-50 text-amber-700 border-amber-300'
+                              }`}
+                            >
+                              Offer: {candidate.jobOffer.status}
+                            </span>
+                          )}
                         </div>
                       </div>
 

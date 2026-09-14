@@ -31,12 +31,15 @@ import { CVManager } from '../../features/applicant-profile/components/CVManager
 import { PrivacySettingsSection } from '../../features/applicant-profile/components/PrivacySettingsSection';
 import { BlindRecruitmentPreviewModal } from '../../features/applicant-profile/components/BlindRecruitmentPreviewModal';
 import { Button } from '../../components/ui/Button';
+import { HeartPulse } from 'lucide-react';
+import { CvHealthCheckModal } from '../../features/career-tools/components/CvHealthCheckModal';
 import type { ProfileTab } from '../../features/applicant-profile/types';
 
 export const ApplicantProfilePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('tab') as ProfileTab) || 'basic';
   const [isBlindModalOpen, setIsBlindModalOpen] = useState(false);
+  const [isCvHealthModalOpen, setIsCvHealthModalOpen] = useState(false);
 
   // Queries & Mutations
   const { data: profile, isLoading: isProfileLoading } = useApplicantProfile();
@@ -100,14 +103,26 @@ export const ApplicantProfilePage: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => setIsBlindModalOpen(true)}
-          className="border-brand-600 text-brand-600 hover:bg-brand-50"
-        >
-          Preview Recruiter Blind View
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCvHealthModalOpen(true)}
+            className="border-brand-200 text-brand-700 bg-brand-50/50 hover:bg-brand-100/60 text-xs gap-1.5"
+          >
+            <HeartPulse className="w-3.5 h-3.5 text-brand-600" />
+            <span>CV Health Diagnostic</span>
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsBlindModalOpen(true)}
+            className="border-brand-600 text-brand-600 hover:bg-brand-50"
+          >
+            Preview Recruiter Blind View
+          </Button>
+        </div>
       </div>
 
       {/* Profile Completeness Meter */}
@@ -223,6 +238,12 @@ export const ApplicantProfilePage: React.FC = () => {
         onClose={() => setIsBlindModalOpen(false)}
         anonymizedProfile={anonymizedPreview}
         isLoading={isAnonymizedLoading}
+      />
+
+      {/* CV Health Diagnostic Modal (FR-AP-24) */}
+      <CvHealthCheckModal
+        isOpen={isCvHealthModalOpen}
+        onClose={() => setIsCvHealthModalOpen(false)}
       />
     </div>
   );

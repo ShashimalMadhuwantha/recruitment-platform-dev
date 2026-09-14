@@ -254,8 +254,11 @@ export class ApplicationService {
             manualOverrideScore: true,
           },
         },
+        jobOffer: true,
       },
     });
+
+    const now = new Date();
 
     return applications.map((app) => {
       const effectiveScore = app.atsScore?.manualOverrideScore
@@ -269,6 +272,40 @@ export class ApplicationService {
         ApplicationStatus.REJECTED,
         ApplicationStatus.WITHDRAWN,
       ];
+
+      // Format job offer if present and visible to candidate (non-DRAFT)
+      let offerDto = null;
+      if (app.jobOffer && app.jobOffer.status !== 'DRAFT') {
+        const isExpired = app.jobOffer.status === 'SENT' && now > new Date(app.jobOffer.expirationDate);
+        const status = isExpired ? 'EXPIRED' : app.jobOffer.status;
+        offerDto = {
+          id: app.jobOffer.id,
+          applicationId: app.jobOffer.applicationId,
+          jobId: app.job.id,
+          jobTitle: app.job.title,
+          companyId: app.job.company.id,
+          companyName: app.job.company.name,
+          candidateId: applicant.id,
+          candidateName: '',
+          candidateEmail: '',
+          createdById: app.jobOffer.createdById,
+          baseSalary: Number(app.jobOffer.baseSalary),
+          currency: app.jobOffer.currency,
+          bonus: app.jobOffer.bonus ? Number(app.jobOffer.bonus) : null,
+          equity: app.jobOffer.equity,
+          startDate: app.jobOffer.startDate.toISOString(),
+          expirationDate: app.jobOffer.expirationDate.toISOString(),
+          offerLetterText: app.jobOffer.offerLetterText,
+          benefitsSummary: app.jobOffer.benefitsSummary,
+          notes: app.jobOffer.notes,
+          status: status as any,
+          declinedReason: app.jobOffer.declinedReason,
+          sentAt: app.jobOffer.sentAt ? app.jobOffer.sentAt.toISOString() : null,
+          respondedAt: app.jobOffer.respondedAt ? app.jobOffer.respondedAt.toISOString() : null,
+          createdAt: app.jobOffer.createdAt.toISOString(),
+          updatedAt: app.jobOffer.updatedAt.toISOString(),
+        };
+      }
 
       return {
         id: app.id,
@@ -285,6 +322,7 @@ export class ApplicationService {
         overallScore: effectiveScore,
         scoreBand: app.atsScore?.scoreBand || null,
         canWithdraw: !terminalStatuses.includes(app.status),
+        jobOffer: offerDto,
       };
     });
   }

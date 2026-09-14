@@ -19,6 +19,8 @@ import moderationRouter from './modules/moderation/moderation.routes';
 import systemConfigRouter from './modules/system-config/system-config.routes';
 import talentPoolRouter from './modules/talent-pool/talent-pool.routes';
 import { applicationCommunicationRouter, interviewsRouter } from './modules/communication/communication.routes';
+import offersRouter from './modules/offers/offers.routes';
+import careerToolsRouter from './modules/career-tools/career-tools.routes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -80,6 +82,8 @@ export const createApp = (): Express => {
   app.use('/api/v1/admin/moderation', moderationRouter);
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/talent-pool', talentPoolRouter);
+  app.use('/api/v1/offers', offersRouter);
+  app.use('/api/v1/career-tools', careerToolsRouter);
 
   // 404 Handler
   app.use((req: Request, _res: Response, next: NextFunction) => {

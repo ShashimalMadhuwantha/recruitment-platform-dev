@@ -143,8 +143,11 @@ export class PipelineManagementService {
           },
           orderBy: { createdAt: 'desc' },
         },
+        jobOffer: true,
       },
     });
+
+    const now = new Date();
 
     const candidates: PipelineCandidateDto[] = applications.map((app) => {
       const atsScoreRecord = app.atsScore;
@@ -218,9 +221,9 @@ export class PipelineManagementService {
         location: app.applicant.location || undefined,
         status: app.status,
         appliedAt: app.appliedAt.toISOString(),
-        cvId: app.cvId,
+        cvId: app.cvId || app.cv?.id || undefined,
         cvFileName: app.cv?.fileName || undefined,
-        cvFileUrl: app.cv ? `/v1/applicant/resume/${app.cv.id}/download` : undefined,
+        cvFileUrl: app.cv ? `/api/v1/applicant/resume/${app.cv.id}/download` : undefined,
         atsScore: atsScoreRecord
           ? {
               overallScore: effectiveScore,
@@ -243,6 +246,37 @@ export class PipelineManagementService {
         screeningAnswers,
         mustHaveSkillsCount: mustHaveSkills.length,
         matchedMustHaveSkillsCount: matchedMustHaveCount,
+        jobOffer: app.jobOffer
+          ? {
+              id: app.jobOffer.id,
+              applicationId: app.jobOffer.applicationId,
+              jobId: job.id,
+              jobTitle: job.title,
+              companyId: job.companyId,
+              companyName: '',
+              candidateId: app.applicant.id,
+              candidateName: `${app.applicant.firstName} ${app.applicant.lastName}`.trim(),
+              candidateEmail: app.applicant.user.email,
+              createdById: app.jobOffer.createdById,
+              baseSalary: Number(app.jobOffer.baseSalary),
+              currency: app.jobOffer.currency,
+              bonus: app.jobOffer.bonus ? Number(app.jobOffer.bonus) : null,
+              equity: app.jobOffer.equity,
+              startDate: app.jobOffer.startDate.toISOString(),
+              expirationDate: app.jobOffer.expirationDate.toISOString(),
+              offerLetterText: app.jobOffer.offerLetterText,
+              benefitsSummary: app.jobOffer.benefitsSummary,
+              notes: app.jobOffer.notes,
+              status: (app.jobOffer.status === 'SENT' && now > new Date(app.jobOffer.expirationDate)
+                ? 'EXPIRED'
+                : app.jobOffer.status) as any,
+              declinedReason: app.jobOffer.declinedReason,
+              sentAt: app.jobOffer.sentAt ? app.jobOffer.sentAt.toISOString() : null,
+              respondedAt: app.jobOffer.respondedAt ? app.jobOffer.respondedAt.toISOString() : null,
+              createdAt: app.jobOffer.createdAt.toISOString(),
+              updatedAt: app.jobOffer.updatedAt.toISOString(),
+            }
+          : null,
       };
     });
 

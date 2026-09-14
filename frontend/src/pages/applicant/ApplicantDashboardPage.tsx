@@ -20,9 +20,18 @@ import {
   MessageSquare,
   Video,
   X,
+  HeartPulse,
+  TrendingUp,
+  Sparkles,
+  FileCheck,
+  CheckCircle,
 } from 'lucide-react';
 import { ApplicationMessageDrawer } from '../../features/communication/components/ApplicationMessageDrawer';
 import { InterviewScheduleList } from '../../features/communication/components/InterviewScheduleList';
+import { OfferReviewModal } from '../../features/offers/components/OfferReviewModal';
+import { CvHealthCheckModal } from '../../features/career-tools/components/CvHealthCheckModal';
+import { ProfileImprovementDrawer } from '../../features/career-tools/components/ProfileImprovementDrawer';
+import { ApplicationScoreBreakdownModal } from '../../features/career-tools/components/ApplicationScoreBreakdownModal';
 
 export const ApplicantDashboardPage: React.FC = () => {
   const { data: profile } = useApplicantProfile();
@@ -39,6 +48,10 @@ export const ApplicantDashboardPage: React.FC = () => {
   const [withdrawReason, setWithdrawReason] = useState('');
   const [messagingApp, setMessagingApp] = useState<ApplicantApplicationListItem | null>(null);
   const [interviewsApp, setInterviewsApp] = useState<ApplicantApplicationListItem | null>(null);
+  const [reviewingOfferApp, setReviewingOfferApp] = useState<ApplicantApplicationListItem | null>(null);
+  const [scoreBreakdownApp, setScoreBreakdownApp] = useState<ApplicantApplicationListItem | null>(null);
+  const [isCvHealthModalOpen, setIsCvHealthModalOpen] = useState(false);
+  const [isImprovementDrawerOpen, setIsImprovementDrawerOpen] = useState(false);
 
   // Calculate stats from live applications
   const validScores = applications
@@ -73,7 +86,27 @@ export const ApplicantDashboardPage: React.FC = () => {
             Track your job applications, withdrawal requests, and ATS match scoring
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCvHealthModalOpen(true)}
+            className="border-brand-200 text-brand-700 bg-brand-50/50 hover:bg-brand-100/60 text-xs gap-1.5"
+          >
+            <HeartPulse className="w-3.5 h-3.5 text-brand-600" />
+            <span>CV Health Diagnostic</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsImprovementDrawerOpen(true)}
+            className="border-emerald-200 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/60 text-xs gap-1.5"
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Career Insights</span>
+          </Button>
+
           <Link to="/jobs">
             <Button variant="secondary" size="sm">
               <Briefcase className="w-3.5 h-3.5 mr-1.5" />
@@ -168,78 +201,148 @@ export const ApplicantDashboardPage: React.FC = () => {
               {applications.map((app) => (
                 <div
                   key={app.id}
-                  className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-muted/50 transition"
+                  className="p-5 space-y-3 hover:bg-surface-muted/50 transition"
                 >
-                  <div
-                    className="space-y-1 cursor-pointer flex-1"
-                    onClick={() => setPreviewJobId(app.jobId)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-brand-900 hover:text-brand-600 transition">
-                        {app.jobTitle}
-                      </h3>
-                      <ExternalLink className="w-3.5 h-3.5 text-text-muted" />
-                    </div>
-                    <p className="text-xs text-text-secondary">
-                      {app.companyName} • {app.location || 'Remote'} • Applied on{' '}
-                      {new Date(app.appliedAt).toLocaleDateString()}
-                    </p>
-                    {app.cvFileName && (
-                      <p className="text-[11px] text-text-muted">
-                        Attached Resume: <span className="font-medium text-text-secondary">{app.cvFileName}</span>
-                      </p>
-                    )}
-                    <p className="text-[11px] text-brand-600 font-medium pt-0.5">
-                      Inspect ATS Match Breakdown & Recommendations →
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
-                    {app.overallScore !== null && app.overallScore !== undefined ? (
-                      <ScoreBadge score={app.overallScore} size="sm" />
-                    ) : (
-                      <span className="text-xs text-text-muted font-medium">Scoring...</span>
-                    )}
-
-                    <StatusPill status={app.status} />
-
-                    {/* In-app messaging action */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs gap-1 text-brand-600 border-brand-200 hover:bg-brand-50"
-                      onClick={() => setMessagingApp(app)}
-                      title="Direct Chat with Hiring Team"
+                  {/* Official Job Offer Extended Callout Banner (FR-RC-24) */}
+                  {app.jobOffer && (
+                    <div
+                      className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        app.jobOffer.status === 'ACCEPTED'
+                          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+                          : app.jobOffer.status === 'DECLINED'
+                          ? 'bg-rose-50/80 border-rose-300 text-rose-950'
+                          : app.jobOffer.status === 'EXPIRED'
+                          ? 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                          : 'bg-blue-50/90 border-blue-300 text-blue-950 shadow-2xs'
+                      }`}
                     >
-                      <MessageSquare className="w-3 h-3" />
-                      <span>Messages</span>
-                    </Button>
+                      <div className="flex items-center gap-2.5">
+                        <FileCheck className="w-5 h-5 text-brand-600 shrink-0" />
+                        <div>
+                          <p className="text-xs font-bold">
+                            {app.jobOffer.status === 'ACCEPTED'
+                              ? 'Official Offer Formally Accepted!'
+                              : app.jobOffer.status === 'DECLINED'
+                              ? 'Offer Declined'
+                              : app.jobOffer.status === 'EXPIRED'
+                              ? 'Offer Expired'
+                              : 'Official Job Offer Extended!'}
+                          </p>
+                          <p className="text-[11px] opacity-90">
+                            Base:{' '}
+                            <strong>
+                              {new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: app.jobOffer.currency || 'USD',
+                                maximumFractionDigits: 0,
+                              }).format(app.jobOffer.baseSalary)}
+                            </strong>{' '}
+                            • Starts:{' '}
+                            {new Date(app.jobOffer.startDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
 
-                    {/* Interview schedule details action */}
-                    {app.status === 'INTERVIEW' && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="primary"
+                        onClick={() => setReviewingOfferApp(app)}
+                        className={`text-xs gap-1.5 shrink-0 ${
+                          app.jobOffer.status === 'SENT'
+                            ? 'bg-brand-600 hover:bg-brand-700 text-white'
+                            : 'bg-surface text-text-primary border border-border-default hover:bg-surface-muted'
+                        }`}
+                      >
+                        <FileCheck className="w-3.5 h-3.5" />
+                        <span>
+                          {app.jobOffer.status === 'SENT' ? 'Review & Respond' : 'View Offer Terms'}
+                        </span>
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div
+                      className="space-y-1 cursor-pointer flex-1"
+                      onClick={() => setScoreBreakdownApp(app)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-brand-900 hover:text-brand-600 transition">
+                          {app.jobTitle}
+                        </h3>
+                        <ExternalLink className="w-3.5 h-3.5 text-text-muted" />
+                      </div>
+                      <p className="text-xs text-text-secondary">
+                        {app.companyName} • {app.location || 'Remote'} • Applied on{' '}
+                        {new Date(app.appliedAt).toLocaleDateString()}
+                      </p>
+                      {app.cvFileName && (
+                        <p className="text-[11px] text-text-muted">
+                          Attached Resume:{' '}
+                          <span className="font-medium text-text-secondary">{app.cvFileName}</span>
+                        </p>
+                      )}
+                      <p className="text-[11px] text-brand-600 font-semibold pt-0.5 flex items-center gap-1 hover:underline">
+                        <Sparkles className="w-3 h-3" />
+                        <span>Inspect Match Breakdown & Skill Gap Analysis (FR-AP-22) →</span>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+                      {app.overallScore !== null && app.overallScore !== undefined ? (
+                        <button
+                          type="button"
+                          onClick={() => setScoreBreakdownApp(app)}
+                          className="hover:scale-105 transition-transform"
+                          title="Click to view ATS score & skill gap breakdown"
+                        >
+                          <ScoreBadge score={app.overallScore} size="sm" />
+                        </button>
+                      ) : (
+                        <span className="text-xs text-text-muted font-medium">Scoring...</span>
+                      )}
+
+                      <StatusPill status={app.status} />
+
+                      {/* In-app messaging action */}
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-xs gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/60"
-                        onClick={() => setInterviewsApp(app)}
-                        title="View scheduled interview, join link, and calendar export"
+                        className="text-xs gap-1 text-brand-600 border-brand-200 hover:bg-brand-50"
+                        onClick={() => setMessagingApp(app)}
+                        title="Direct Chat with Hiring Team"
                       >
-                        <Calendar className="w-3 h-3 text-emerald-600" />
-                        <span>Interviews</span>
+                        <MessageSquare className="w-3 h-3" />
+                        <span>Messages</span>
                       </Button>
-                    )}
 
-                    {/* Withdrawal action */}
-                    {app.canWithdraw && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-rose-600 hover:bg-rose-50"
-                        onClick={() => setWithdrawingApp(app)}
-                      >
-                        Withdraw
-                      </Button>
-                    )}
+                      {/* Interview schedule details action */}
+                      {app.status === 'INTERVIEW' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/60"
+                          onClick={() => setInterviewsApp(app)}
+                          title="View scheduled interview, join link, and calendar export"
+                        >
+                          <Calendar className="w-3 h-3 text-emerald-600" />
+                          <span>Interviews</span>
+                        </Button>
+                      )}
+
+                      {/* Withdrawal action */}
+                      {app.canWithdraw && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-rose-600 hover:bg-rose-50"
+                          onClick={() => setWithdrawingApp(app)}
+                        >
+                          Withdraw
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -432,6 +535,41 @@ export const ApplicantDashboardPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Epic 13 Applicant Offer Review Modal (FR-RC-24) */}
+      {reviewingOfferApp && reviewingOfferApp.jobOffer && (
+        <OfferReviewModal
+          isOpen={Boolean(reviewingOfferApp)}
+          onClose={() => setReviewingOfferApp(null)}
+          offer={reviewingOfferApp.jobOffer}
+          candidateName={
+            profile?.firstName && profile?.lastName
+              ? `${profile.firstName} ${profile.lastName}`
+              : 'Applicant'
+          }
+        />
+      )}
+
+      {/* Epic 13 Applicant Post-Apply Score Feedback & Skill Gap Analysis (FR-AP-22) */}
+      {scoreBreakdownApp && (
+        <ApplicationScoreBreakdownModal
+          isOpen={Boolean(scoreBreakdownApp)}
+          onClose={() => setScoreBreakdownApp(null)}
+          application={scoreBreakdownApp}
+        />
+      )}
+
+      {/* Epic 13 CV Health Diagnostic Modal (FR-AP-24) */}
+      <CvHealthCheckModal
+        isOpen={isCvHealthModalOpen}
+        onClose={() => setIsCvHealthModalOpen(false)}
+      />
+
+      {/* Epic 13 Career Insights & Missing Skills Drawer (FR-AP-23) */}
+      <ProfileImprovementDrawer
+        isOpen={isImprovementDrawerOpen}
+        onClose={() => setIsImprovementDrawerOpen(false)}
+      />
     </div>
   );
 };

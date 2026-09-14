@@ -21,12 +21,21 @@ import {
   CheckCircle2,
   MessageSquare,
   Calendar,
+  Sparkles,
+  DollarSign,
+  UserCheck,
+  FileCheck,
+  ExternalLink,
+  Loader2,
 } from 'lucide-react';
+import { apiClient } from '../../../lib/api-client';
 import { ApplicationMessageDrawer } from '../../communication/components/ApplicationMessageDrawer';
 import { InterviewSchedulerModal } from '../../communication/components/InterviewSchedulerModal';
 import { InterviewScorecardModal } from '../../communication/components/InterviewScorecardModal';
 import { InterviewScheduleList } from '../../communication/components/InterviewScheduleList';
 import type { InterviewScheduleDto } from '../../communication/types';
+import { OfferGeneratorModal } from '../../offers/components/OfferGeneratorModal';
+import { MarkHiredModal } from '../../offers/components/MarkHiredModal';
 
 interface CandidateDetailDrawerProps {
   candidate: PipelineCandidateDto | null;
@@ -60,6 +69,49 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
   const [isSchedulerModalOpen, setIsSchedulerModalOpen] = useState(false);
   const [selectedInterviewForScorecard, setSelectedInterviewForScorecard] =
     useState<InterviewScheduleDto | null>(null);
+  const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+  const [isHireModalOpen, setIsHireModalOpen] = useState(false);
+  const [isOpeningDocument, setIsOpeningDocument] = useState(false);
+
+  const handleViewDocument = async () => {
+    const cvId = candidate?.cvId;
+    if (!cvId) return;
+
+    // Open blank tab immediately on user click to avoid pop-up blockers
+    const newTab = window.open('about:blank', '_blank');
+    if (newTab) {
+      newTab.document.write(
+        '<!DOCTYPE html><html><head><title>Loading Document...</title><style>body{font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f8fafc;color:#475569;}</style></head><body><p>Loading document, please wait...</p></body></html>'
+      );
+    }
+
+    setIsOpeningDocument(true);
+    try {
+      const res = await apiClient.get(`/v1/applicant/resume/${cvId}/download`, {
+        responseType: 'blob',
+      });
+      const contentType = (res.headers['content-type'] as string) || 'application/pdf';
+      const fileBlob = new Blob([res.data], { type: contentType });
+      const fileUrl = window.URL.createObjectURL(fileBlob);
+
+      if (newTab && !newTab.closed) {
+        newTab.location.href = fileUrl;
+      } else {
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.setAttribute('download', candidate?.cvFileName || 'Resume.pdf');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    } catch (err: any) {
+      if (newTab && !newTab.closed) newTab.close();
+      console.error('Failed to open CV document:', err);
+      alert(err.response?.data?.error?.message || 'Failed to open document. Please try again.');
+    } finally {
+      setIsOpeningDocument(false);
+    }
+  };
 
   if (!isOpen || !candidate) return null;
 
@@ -158,6 +210,103 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
             </Button>
           </div>
 
+          {/* Offer & Hiring Workflow (FR-RC-24, FR-RC-25) */}
+          <div className="p-3.5 rounded-xl border border-brand-200/80 bg-gradient-to-br from-brand-50/40 via-surface to-surface space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-brand-600" />
+                <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                  Offer & Hiring
+                </h3>
+              </div>
+              {candidate.jobOffer && (
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    candidate.jobOffer.status === 'ACCEPTED'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                      : candidate.jobOffer.status === 'SENT'
+                      ? 'bg-blue-50 text-blue-700 border-blue-300'
+                      : candidate.jobOffer.status === 'DECLINED'
+                      ? 'bg-rose-50 text-rose-700 border-rose-300'
+                      : candidate.jobOffer.status === 'EXPIRED'
+                      ? 'bg-zinc-100 text-zinc-700 border-zinc-300'
+                      : 'bg-amber-50 text-amber-700 border-amber-300'
+                  }`}
+                >
+                  Offer: {candidate.jobOffer.status}
+                </span>
+              )}
+            </div>
+
+            {candidate.jobOffer ? (
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between text-text-secondary bg-surface p-2 rounded-lg border border-border-default">
+                  <span className="flex items-center gap-1 font-medium text-text-primary">
+                    <DollarSign className="w-3.5 h-3.5 text-brand-600" />
+                    {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: candidate.jobOffer.currency || 'USD',
+                      maximumFractionDigits: 0,
+                    }).format(candidate.jobOffer.baseSalary)}
+                  </span>
+                  <span>
+                    Starts:{' '}
+                    {new Date(candidate.jobOffer.startDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsOfferModalOpen(true)}
+                    className="flex-1 text-xs gap-1.5 justify-center border-brand-300 text-brand-700 hover:bg-brand-50"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Manage / View Offer</span>
+                  </Button>
+                  {candidate.status !== 'HIRED' && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setIsHireModalOpen(true)}
+                      className="flex-1 text-xs gap-1.5 justify-center bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <UserCheck className="w-3.5 h-3.5" />
+                      <span>Mark as Hired</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsOfferModalOpen(true)}
+                  className="flex-1 text-xs gap-1.5 justify-center border-brand-300 text-brand-700 hover:bg-brand-50"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+                  <span>Generate Job Offer</span>
+                </Button>
+                {candidate.status !== 'HIRED' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsHireModalOpen(true)}
+                    className="text-xs gap-1.5 justify-center text-emerald-800 border-emerald-300 hover:bg-emerald-50"
+                  >
+                    <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Hire Direct</span>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Contact Details & Info */}
           <div className="space-y-2 text-xs">
             <h3 className="font-bold text-text-primary uppercase tracking-wider text-[11px]">
@@ -231,15 +380,25 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
                   <FileText className="w-4 h-4 text-brand-600 shrink-0" />
                   <span className="font-medium truncate">{candidate.cvFileName}</span>
                 </div>
-                {candidate.cvFileUrl && (
-                  <a
-                    href={candidate.cvFileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline"
+                {(candidate.cvId || candidate.cvFileUrl) && (
+                  <button
+                    type="button"
+                    onClick={handleViewDocument}
+                    disabled={isOpeningDocument}
+                    className="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline flex items-center gap-1 cursor-pointer disabled:opacity-60"
                   >
-                    View Document →
-                  </a>
+                    {isOpeningDocument ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Opening...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>View Document</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
             </div>
@@ -451,6 +610,27 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
         onClose={() => setSelectedInterviewForScorecard(null)}
         interview={selectedInterviewForScorecard}
         applicationId={candidate.id}
+      />
+
+      {/* Recruiter Formal Offer Generator Modal (FR-RC-24) */}
+      <OfferGeneratorModal
+        isOpen={isOfferModalOpen}
+        onClose={() => setIsOfferModalOpen(false)}
+        applicationId={candidate.id}
+        candidateName={candidate.fullName}
+        candidateEmail={candidate.email}
+        jobTitle={candidate.jobTitle}
+        existingOffer={candidate.jobOffer}
+      />
+
+      {/* Recruiter Mark as Hired & Close Requisition Modal (FR-RC-25) */}
+      <MarkHiredModal
+        isOpen={isHireModalOpen}
+        onClose={() => setIsHireModalOpen(false)}
+        applicationId={candidate.id}
+        candidateName={candidate.fullName}
+        jobTitle={candidate.jobTitle}
+        onHired={() => onMoveStage(candidate.id, 'HIRED' as ApplicationStatus)}
       />
     </div>
   );
