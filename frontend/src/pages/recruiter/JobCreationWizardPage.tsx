@@ -178,15 +178,54 @@ export const JobCreationWizardPage: React.FC = () => {
     }
   }, [existingJob]);
 
-  // Run compliance check whenever moving to Step 4
+  // Helper to find violations in a specific text field
+  const getFieldViolations = (text: string) => {
+    if (!complianceResult?.violations || !text) return [];
+    const lower = text.toLowerCase();
+    return complianceResult.violations.filter((v) =>
+      lower.includes(v.keyword.toLowerCase().trim())
+    );
+  };
+
+  // Debounced real-time compliance check across title, description, and requirementsSummary
   useEffect(() => {
-    if (currentStep === 4 && (title || description)) {
+    const hasContent = title.trim() || description.trim() || requirementsSummary.trim();
+    if (!hasContent) {
+      setComplianceResult(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
       complianceMutation
-        .mutateAsync({ title, description })
+        .mutateAsync({
+          title: title.trim(),
+          description: description.trim(),
+          requirementsSummary: requirementsSummary.trim(),
+        })
+        .then((res) => setComplianceResult(res))
+        .catch(() => {});
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [title, description, requirementsSummary]);
+
+  // Ensure compliance check runs immediately when moving to Step 4 if not yet loaded
+  useEffect(() => {
+    if (
+      currentStep === 4 &&
+      !complianceResult &&
+      (title.trim() || description.trim() || requirementsSummary.trim())
+    ) {
+      complianceMutation
+        .mutateAsync({
+          title: title.trim(),
+          description: description.trim(),
+          requirementsSummary: requirementsSummary.trim(),
+        })
         .then((res) => setComplianceResult(res))
         .catch(() => {});
     }
-  }, [currentStep, title, description]);
+  }, [currentStep, complianceResult, title, description, requirementsSummary]);
 
   // Skills helpers
   const handleAddSkill = (skillId: string) => {
@@ -395,8 +434,18 @@ export const JobCreationWizardPage: React.FC = () => {
                 placeholder="e.g. Senior Full Stack Engineer"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg bg-surface border border-border-default text-xs text-text-primary focus:outline-none focus:border-brand-500 font-medium"
+                className={`w-full px-3.5 py-2 rounded-lg bg-surface border text-xs text-text-primary focus:outline-none font-medium ${
+                  getFieldViolations(title).length > 0
+                    ? 'border-rose-400 focus:border-rose-500 bg-rose-50/10'
+                    : 'border-border-default focus:border-brand-500'
+                }`}
               />
+              {getFieldViolations(title).length > 0 && (
+                <p className="text-[11px] text-[#B3423A] mt-1 flex items-center gap-1 font-medium">
+                  <AlertTriangle className="w-3 h-3 shrink-0" />
+                  Contains prohibited keyword: {getFieldViolations(title).map((v) => `"${v.keyword}"`).join(', ')}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -466,8 +515,18 @@ export const JobCreationWizardPage: React.FC = () => {
                 placeholder="Brief one-line highlight (e.g. 5+ years React, distributed backend architecture)"
                 value={requirementsSummary}
                 onChange={(e) => setRequirementsSummary(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-surface border border-border-default text-xs text-text-primary focus:outline-none focus:border-brand-500"
+                className={`w-full px-3 py-2 rounded-lg bg-surface border text-xs text-text-primary focus:outline-none ${
+                  getFieldViolations(requirementsSummary).length > 0
+                    ? 'border-rose-400 focus:border-rose-500 bg-rose-50/10'
+                    : 'border-border-default focus:border-brand-500'
+                }`}
               />
+              {getFieldViolations(requirementsSummary).length > 0 && (
+                <p className="text-[11px] text-[#B3423A] mt-1 flex items-center gap-1 font-medium">
+                  <AlertTriangle className="w-3 h-3 shrink-0" />
+                  Contains prohibited keyword: {getFieldViolations(requirementsSummary).map((v) => `"${v.keyword}"`).join(', ')}
+                </p>
+              )}
             </div>
 
             <div>
@@ -478,9 +537,71 @@ export const JobCreationWizardPage: React.FC = () => {
                 placeholder="Describe role responsibilities, team structure, tech stack, and ideal background..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-surface border border-border-default text-xs text-text-primary focus:outline-none focus:border-brand-500 leading-relaxed font-sans"
+                className={`w-full px-3.5 py-2.5 rounded-lg bg-surface border text-xs text-text-primary focus:outline-none leading-relaxed font-sans ${
+                  getFieldViolations(description).length > 0
+                    ? 'border-rose-400 focus:border-rose-500 bg-rose-50/10'
+                    : 'border-border-default focus:border-brand-500'
+                }`}
               />
+              {getFieldViolations(description).length > 0 && (
+                <p className="text-[11px] text-[#B3423A] mt-1 flex items-center gap-1 font-medium">
+                  <AlertTriangle className="w-3 h-3 shrink-0" />
+                  Contains prohibited keyword: {getFieldViolations(description).map((v) => `"${v.keyword}"`).join(', ')}
+                </p>
+              )}
             </div>
+
+            {/* Real-time Compliance Status Banner on Step 1 */}
+            {complianceResult?.hasViolations && (
+              <div
+                className={`p-4 rounded-lg border flex flex-col gap-2 transition-all ${
+                  !complianceResult.canPublish
+                    ? 'bg-rose-50 border-rose-300 text-rose-800'
+                    : 'bg-amber-50 border-amber-300 text-amber-800'
+                }`}
+              >
+                <div className="flex items-center gap-2 font-bold text-xs">
+                  <ShieldAlert className="w-4 h-4 shrink-0 text-current" />
+                  <span>
+                    {!complianceResult.canPublish
+                      ? 'Prohibited or Discriminatory Language Detected (Publication Blocked)'
+                      : 'Content Policy Warnings Found'}
+                  </span>
+                </div>
+                <p className="text-xs leading-relaxed">
+                  {!complianceResult.canPublish
+                    ? 'The compliance engine detected prohibited or discriminatory keywords in your job posting. This vacancy cannot be published until these issues are resolved:'
+                    : 'The compliance engine flagged potential advisory content issues in your posting:'}
+                </p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {complianceResult.violations.map((v, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-0.5 rounded text-[11px] font-mono bg-white border border-current shadow-sm font-semibold flex items-center gap-1.5"
+                    >
+                      <span>"{v.keyword}"</span>
+                      <span className="text-[10px] px-1 py-0.2 rounded font-sans font-bold bg-black/5">
+                        {v.severity}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+                <p className="text-[11px] font-semibold mt-1">
+                  {!complianceResult.canPublish
+                    ? 'Please revise or remove these keywords in the Title, Requirements Summary, or Description above.'
+                    : 'Review the flagged terms above to ensure your posting conforms with company guidelines.'}
+                </p>
+              </div>
+            )}
+
+            {complianceResult && !complianceResult.hasViolations && (title.trim() || description.trim() || requirementsSummary.trim()) && (
+              <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>
+                  <strong>Compliance check passed:</strong> No prohibited or discriminatory keywords detected.
+                </span>
+              </div>
+            )}
 
             <div className="flex justify-end pt-4 border-t border-border-default">
               <Button
@@ -1134,7 +1255,7 @@ export const JobCreationWizardPage: React.FC = () => {
                 <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>
-                    <strong>Compliance scan passed!</strong> No discriminatory or prohibited keyword patterns were detected in the title and description.
+                    <strong>Compliance scan passed!</strong> No discriminatory or prohibited keyword patterns were detected in the title, requirements summary, or description.
                   </span>
                 </div>
               )

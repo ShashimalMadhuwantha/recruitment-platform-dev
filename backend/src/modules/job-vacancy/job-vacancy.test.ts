@@ -85,6 +85,18 @@ describe('JobVacancyService Unit & Integration Tests (Epic 5)', () => {
       expect(result.hasViolations).toBe(false);
       expect(result.canPublish).toBe(true);
     });
+
+    it('should detect banned keywords when present in requirementsSummary', async () => {
+      const result = await jobVacancyService.checkCompliance(
+        'Staff Engineer',
+        'Looking for senior engineering leadership.',
+        'Requires recent graduate only.'
+      );
+
+      expect(result.hasViolations).toBe(true);
+      expect(result.canPublish).toBe(false);
+      expect(result.violations.some((v) => v.keyword === 'recent graduate only')).toBe(true);
+    });
   });
 
   describe('2. Multi-Step Job Creation & Publishing Wizard', () => {
@@ -159,6 +171,59 @@ describe('JobVacancyService Unit & Integration Tests (Epic 5)', () => {
             title: 'Frontend Developer',
             description: 'Must be young and energetic developer.',
             status: JobStatus.PUBLISHED,
+          },
+          recruiterUserId,
+          'RECRUITER'
+        )
+      ).rejects.toThrow('prohibited discriminatory keywords');
+    });
+
+    it('should reject publishing a job if requirementsSummary contains BLOCK keywords', async () => {
+      await expect(
+        jobVacancyService.createJobVacancy(
+          {
+            title: 'Backend Developer',
+            description: 'Building modern microservices.',
+            requirementsSummary: 'Seeking young and energetic talent.',
+            status: JobStatus.PUBLISHED,
+          },
+          recruiterUserId,
+          'RECRUITER'
+        )
+      ).rejects.toThrow('prohibited discriminatory keywords');
+    });
+
+    it('should reject edits to an already published job if edit introduces BLOCK keywords in description or requirementsSummary', async () => {
+      // First publish a valid job
+      const cleanJob = await jobVacancyService.createJobVacancy(
+        {
+          title: 'Clean Published Job',
+          description: 'Valid clean description for published position.',
+          status: JobStatus.PUBLISHED,
+        },
+        recruiterUserId,
+        'RECRUITER'
+      );
+      expect(cleanJob.status).toBe(JobStatus.PUBLISHED);
+
+      // Attempt edit with BLOCK keyword in description
+      await expect(
+        jobVacancyService.updateJobVacancy(
+          cleanJob.id,
+          {
+            description: 'Updated to require young and energetic developer.',
+          },
+          recruiterUserId,
+          'RECRUITER'
+        )
+      ).rejects.toThrow('prohibited discriminatory keywords');
+
+      // Attempt edit with BLOCK keyword in requirementsSummary
+      await expect(
+        jobVacancyService.updateJobVacancy(
+          cleanJob.id,
+          {
+            requirementsSummary: 'Must be recent graduate only.',
           },
           recruiterUserId,
           'RECRUITER'

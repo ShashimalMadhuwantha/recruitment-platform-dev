@@ -71,10 +71,14 @@ export class JobVacancyService {
   }
 
   /**
-   * Check title and description against banned/discriminatory keywords dictionary
+   * Check title, description, and requirementsSummary against banned/discriminatory keywords dictionary
    */
-  async checkCompliance(title: string, description: string) {
-    const combinedText = `${title} ${description}`.toLowerCase();
+  async checkCompliance(
+    title?: string | null,
+    description?: string | null,
+    requirementsSummary?: string | null
+  ) {
+    const combinedText = `${title || ''} ${description || ''} ${requirementsSummary || ''}`.toLowerCase();
     const bannedKeywords = await prisma.bannedKeyword.findMany({
       where: { isActive: true },
     });
@@ -87,10 +91,12 @@ export class JobVacancyService {
     }> = [];
 
     for (const item of bannedKeywords) {
-      const keywordLower = item.keyword.toLowerCase();
-      // Whole word or boundary regex
-      const regex = new RegExp(`\\b${keywordLower}\\b`, 'i');
-      if (regex.test(combinedText)) {
+      const keywordLower = item.keyword.toLowerCase().trim();
+      if (!keywordLower) continue;
+
+      const escapedKeyword = keywordLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'i');
+      if (regex.test(combinedText) || combinedText.includes(keywordLower)) {
         violations.push({
           keyword: item.keyword,
           category: item.category,
@@ -243,7 +249,11 @@ export class JobVacancyService {
     const companyId = await this.resolveRecruiterCompany(userId, userRole);
 
     // 1. Compliance Scan
-    const compliance = await this.checkCompliance(data.title, data.description);
+    const compliance = await this.checkCompliance(
+      data.title,
+      data.description,
+      data.requirementsSummary
+    );
     if (!compliance.canPublish && data.status === JobStatus.PUBLISHED) {
       throw new BadRequestError(
         'Job vacancy contains prohibited discriminatory keywords. Please revise before publishing.'
@@ -371,16 +381,22 @@ export class JobVacancyService {
   async updateJobVacancy(id: string, data: UpdateJobVacancyDto, userId: string, userRole: string) {
     const existing = await this.getJobDetails(id, userId, userRole);
 
-    // If publishing, check compliance & quota
-    if (data.status === JobStatus.PUBLISHED && existing.status !== JobStatus.PUBLISHED) {
-      const titleToCheck = data.title || existing.title;
-      const descToCheck = data.description || existing.description;
-      const compliance = await this.checkCompliance(titleToCheck, descToCheck);
+    // If the post is or will be PUBLISHED, enforce compliance scan across title, description, and requirementsSummary
+    const targetStatus = data.status || existing.status;
+    if (targetStatus === JobStatus.PUBLISHED) {
+      const titleToCheck = data.title !== undefined ? data.title : existing.title;
+      const descToCheck = data.description !== undefined ? data.description : existing.description;
+      const reqSummaryToCheck =
+        data.requirementsSummary !== undefined ? data.requirementsSummary : existing.requirementsSummary;
+      const compliance = await this.checkCompliance(titleToCheck, descToCheck, reqSummaryToCheck);
       if (!compliance.canPublish) {
         throw new BadRequestError(
           'Job vacancy contains prohibited discriminatory keywords. Please revise before publishing.'
         );
       }
+    }
+
+    if (data.status === JobStatus.PUBLISHED && existing.status !== JobStatus.PUBLISHED) {
       await this.checkCompanyJobQuota(existing.companyId, id);
     }
 
@@ -506,7 +522,11 @@ export class JobVacancyService {
     const existing = await this.getJobDetails(id, userId, userRole);
 
     if (newStatus === JobStatus.PUBLISHED && existing.status !== JobStatus.PUBLISHED) {
-      const compliance = await this.checkCompliance(existing.title, existing.description);
+      const compliance = await this.checkCompliance(
+        existing.title,
+        existing.description,
+        existing.requirementsSummary
+      );
       if (!compliance.canPublish) {
         throw new BadRequestError(
           'Job vacancy contains prohibited discriminatory keywords. Please revise before publishing.'

@@ -85,4 +85,5 @@ export const updateJobStatusSchema = z.object({
 export const complianceCheckSchema = z.object({
   title: z.string().optional().default(''),
   description: z.string().optional().default(''),
+  requirementsSummary: z.string().optional().default(''),
 });

@@ -89,7 +89,11 @@ export class JobVacancyController {
   async checkCompliance(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = complianceCheckSchema.parse(req.body);
-      const result = await jobVacancyService.checkCompliance(validated.title, validated.description);
+      const result = await jobVacancyService.checkCompliance(
+        validated.title,
+        validated.description,
+        validated.requirementsSummary
+      );
       return res.status(200).json({ data: result, error: null });
     } catch (err) {
       next(err);

@@ -54,7 +54,11 @@ export const jobVacancyApi = {
     return res.data.data;
   },
 
-  checkCompliance: async (data: { title?: string; description?: string }): Promise<JobComplianceCheckResult> => {
+  checkCompliance: async (data: {
+    title?: string;
+    description?: string;
+    requirementsSummary?: string;
+  }): Promise<JobComplianceCheckResult> => {
     const res = await apiClient.post<{ data: JobComplianceCheckResult }>('/v1/job-vacancies/check-compliance', data);
     return res.data.data;
   },

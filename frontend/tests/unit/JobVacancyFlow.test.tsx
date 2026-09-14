@@ -330,6 +330,53 @@ describe('Frontend Recruiter Job Vacancy Flow (Epic 5)', () => {
       expect(publishBtn).toBeDisabled();
     });
 
+    it('real-time flags violations directly on Step 1 while typing requirementsSummary or description', async () => {
+      const mockComplianceCheck = vi.fn().mockResolvedValue({
+        hasViolations: true,
+        canPublish: false,
+        violations: [
+          {
+            keyword: 'young and energetic',
+            category: 'AGE',
+            severity: 'BLOCK',
+            explanation: 'Age-discriminatory phrasing.',
+          },
+        ],
+      });
+
+      vi.spyOn(JobHooksModule, 'useCheckCompliance').mockReturnValue({
+        mutateAsync: mockComplianceCheck,
+        isPending: false,
+      } as any);
+
+      renderWithProviders(<JobCreationWizardPage />);
+
+      // Recruiter is on Step 1
+      expect(screen.getByText('Role Details & Overview')).toBeInTheDocument();
+
+      // Type in requirementsSummary on Step 1
+      fireEvent.change(screen.getByPlaceholderText(/Brief one-line highlight/i), {
+        target: { value: 'Looking for young and energetic individuals' },
+      });
+
+      // Real-time debounced check runs on Step 1
+      await waitFor(() => {
+        expect(mockComplianceCheck).toHaveBeenCalledWith(
+          expect.objectContaining({
+            requirementsSummary: 'Looking for young and energetic individuals',
+          })
+        );
+      });
+
+      // Violations must appear directly on Step 1
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Prohibited or Discriminatory Language Detected/i)
+        ).toBeInTheDocument();
+        expect(screen.getByText(/Contains prohibited keyword: "young and energetic"/i)).toBeInTheDocument();
+      });
+    });
+
     it('submits job as draft when Save as Draft button is clicked on Step 4', async () => {
       const mockCreate = vi.fn().mockResolvedValue({ id: 'job-999', status: 'DRAFT' });
       vi.spyOn(JobHooksModule, 'useCreateJob').mockReturnValue({

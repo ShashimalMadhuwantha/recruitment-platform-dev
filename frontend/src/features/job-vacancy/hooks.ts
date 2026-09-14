@@ -80,7 +80,7 @@ export const useDeleteJob = () => {
 
 export const useCheckCompliance = () => {
   return useMutation({
-    mutationFn: (data: { title?: string; description?: string }) =>
+    mutationFn: (data: { title?: string; description?: string; requirementsSummary?: string }) =>
       jobVacancyApi.checkCompliance(data),
   });
 };
