@@ -120,6 +120,7 @@ export interface AuthenticatedUser {
   status: UserStatus;
   companyId?: string | null;
   recruiterSubRole?: RecruiterSubRole | null;
+  recruiterPermissions?: Partial<RecruiterPermissions> | null;
   isImpersonating?: boolean;
   impersonatorId?: string | null;
 }
@@ -1356,5 +1357,187 @@ export interface AnalyticsFilterParams {
   stage?: string;
   scoreBand?: ScoreBand | string;
 }
+
+// -------------------------------------------------------------
+// Epic 17: Company, Team & Subscription Plan Seat Management
+// -------------------------------------------------------------
+
+export type TeamInvitationStatus = 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+
+export interface RecruiterPermissions {
+  canCreateJobs: boolean;
+  canEditJobs: boolean;
+  canDeleteJobs: boolean;
+  canViewCandidateSalary: boolean;
+  canAdvancePipeline: boolean;
+  canScheduleInterviews: boolean;
+  canSubmitScorecards: boolean;
+  canExtendOffers: boolean;
+  canManageTeam: boolean;
+  canViewAnalytics: boolean;
+  canManageCompanyProfile: boolean;
+}
+
+export interface CompanyLocation {
+  city: string;
+  state?: string;
+  country: string;
+  address?: string;
+  isHq?: boolean;
+}
+
+export interface CultureMediaItem {
+  type: 'IMAGE' | 'VIDEO';
+  url: string;
+  caption?: string;
+}
+
+export interface CompanySocialLinks {
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  glassdoor?: string;
+  website?: string;
+}
+
+export interface CompanyProfileDto {
+  id: string;
+  name: string;
+  slug: string;
+  industry?: string | null;
+  size?: string | null;
+  logoUrl?: string | null;
+  coverPhotoUrl?: string | null;
+  website?: string | null;
+  description?: string | null;
+  locations?: CompanyLocation[];
+  cultureMedia?: CultureMediaItem[];
+  socialLinks?: CompanySocialLinks;
+  planId?: string | null;
+  status: CompanyStatus;
+  plan?: SubscriptionPlan | null;
+}
+
+export interface UpdateCompanyProfileDto {
+  name?: string;
+  industry?: string | null;
+  size?: string | null;
+  logoUrl?: string | null;
+  coverPhotoUrl?: string | null;
+  website?: string | null;
+  description?: string | null;
+  locations?: CompanyLocation[];
+  cultureMedia?: CultureMediaItem[];
+  socialLinks?: CompanySocialLinks;
+}
+
+export interface TeamMemberDto {
+  id: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  title?: string | null;
+  department?: string | null;
+  subRole: RecruiterSubRole;
+  permissions?: Partial<RecruiterPermissions> | null;
+  createdAt: string;
+}
+
+export interface TeamInvitationDto {
+  id: string;
+  email: string;
+  subRole: RecruiterSubRole;
+  permissions?: Partial<RecruiterPermissions> | null;
+  status: TeamInvitationStatus;
+  invitedById: string;
+  invitedByName?: string;
+  expiresAt: string;
+  createdAt: string;
+  isExpired: boolean;
+}
+
+export interface TeamDirectoryResponseDto {
+  members: TeamMemberDto[];
+  pendingInvitations: TeamInvitationDto[];
+}
+
+export interface InviteTeamMemberDto {
+  email: string;
+  subRole: RecruiterSubRole;
+  department?: string;
+  title?: string;
+  permissions?: Partial<RecruiterPermissions>;
+}
+
+export interface UpdateTeamMemberDto {
+  subRole?: RecruiterSubRole;
+  department?: string | null;
+  title?: string | null;
+  permissions?: Partial<RecruiterPermissions> | null;
+}
+
+export interface RemoveTeamMemberDto {
+  transferRequisitionsToUserId?: string;
+}
+
+export interface AcceptInvitationDto {
+  token: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface VerifyInvitationResponseDto {
+  valid: boolean;
+  email: string;
+  companyName: string;
+  companyLogoUrl?: string | null;
+  subRole: RecruiterSubRole;
+  isExistingUser: boolean;
+}
+
+export interface PlanUsageDto {
+  plan: {
+    id: string;
+    name: string;
+    tier: PlanTier;
+    priceMonthly: number;
+    maxSeats: number;
+    maxJobPosts: number;
+    maxAtsScans: number;
+    features: Record<string, boolean>;
+  };
+  usage: {
+    seats: {
+      activeRecruiters: number;
+      pendingInvites: number;
+      occupiedSeats: number;
+      maxSeats: number;
+      remainingSeats: number;
+      percentUsed: number;
+      isAtCapacity: boolean;
+    };
+    jobPosts: {
+      activeJobs: number;
+      maxJobPosts: number;
+      remainingJobs: number;
+      percentUsed: number;
+      isAtCapacity: boolean;
+    };
+    atsScans: {
+      scansUsed: number;
+      maxAtsScans: number;
+      remainingScans: number;
+      percentUsed: number;
+      isAtCapacity: boolean;
+    };
+  };
+}
+
+export interface RequestPlanUpgradeDto {
+  requestedTier: PlanTier;
+  note?: string;
+}
+
 
 

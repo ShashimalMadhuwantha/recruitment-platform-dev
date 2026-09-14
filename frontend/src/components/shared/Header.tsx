@@ -120,6 +120,18 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             >
               Analytics
             </Link>
+            <Link
+              to="/recruiter/team"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Team
+            </Link>
+            <Link
+              to="/recruiter/company-profile"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Company
+            </Link>
           </nav>
         )}
 

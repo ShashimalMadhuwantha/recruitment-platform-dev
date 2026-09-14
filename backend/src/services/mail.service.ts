@@ -167,5 +167,97 @@ export class MailService {
       return false;
     }
   }
+
+  /**
+   * Sends a Team Member Invitation Email with a secure acceptance link
+   */
+  static async sendTeamInvitationEmail(
+    to: string,
+    companyName: string,
+    subRole: string,
+    token: string,
+    inviterName?: string
+  ): Promise<boolean> {
+    const inviteUrl = `${config.FRONTEND_URL}/invite/accept?token=${token}`;
+    const readableRole = subRole.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    const subject = `Invitation to join ${companyName} on RecruitATS`;
+    const title = `Join ${companyName}'s Hiring Team`;
+    const inviterText = inviterName ? `<strong>${inviterName}</strong> has invited you` : `You have been invited`;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #1e293b; }
+            .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+            .header { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+            .content { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
+            .badge { display: inline-block; background-color: #e0e7ff; color: #3730a3; font-weight: 600; font-size: 12px; padding: 4px 10px; border-radius: 9999px; margin-top: 4px; }
+            .button-wrapper { text-align: center; margin: 28px 0; }
+            .button { display: inline-block; padding: 12px 24px; font-size: 14px; font-weight: 600; color: #ffffff !important; background-color: #2563eb; border-radius: 6px; text-decoration: none; }
+            .footer { font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px; margin-top: 24px; }
+            .link-fallback { font-size: 12px; color: #64748b; word-break: break-all; margin-top: 16px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">${title}</div>
+            <div class="content">
+              Hello,<br><br>
+              ${inviterText} to join <strong>${companyName}</strong> on the RecruitATS Platform as a:
+              <br>
+              <span class="badge">${readableRole}</span>
+              <br><br>
+              As part of the hiring team, you can collaborate on candidate evaluations, track applicant pipelines, and manage requisitions.
+            </div>
+            <div class="button-wrapper">
+              <a href="${inviteUrl}" class="button" target="_blank">Accept Invitation</a>
+            </div>
+            <div class="content">
+              This invitation link is valid for <strong>7 days</strong>.
+            </div>
+            <div class="link-fallback">
+              Button not working? Copy and paste this URL into your browser:<br>
+              <a href="${inviteUrl}" style="color: #2563eb;">${inviteUrl}</a>
+            </div>
+            <div class="footer">
+              RecruitATS Platform &bull; Team Management System
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    if (this.transporter) {
+      try {
+        const info = await this.transporter.sendMail({
+          from: config.SMTP_FROM,
+          to,
+          subject,
+          html: htmlContent,
+          text: `${title}\n\n${inviterText} to join ${companyName} as a ${readableRole}.\n\nAccept link: ${inviteUrl}`,
+        });
+        console.log(`📧 [MailService] ✅ Team invitation email dispatched to: ${to} | Company: ${companyName} (MessageId: ${info.messageId})`);
+        return true;
+      } catch (error: any) {
+        console.error(`📧 [MailService] ❌ Failed to send team invitation email via SMTP to ${to}:`, error.message || error);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`📧 [MailService Fallback - Local Dev Delivery] Team Invite to: ${to}`);
+        console.log(`📌 Company: ${companyName} | Role: ${readableRole}`);
+        console.log(`🔗 Accept URL: ${inviteUrl}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return false;
+      }
+    } else {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`📧 [MailService Mock] Team Invite to: ${to}`);
+      console.log(`📌 Company: ${companyName} | Role: ${readableRole}`);
+      console.log(`🔗 Accept URL: ${inviteUrl}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      return false;
+    }
+  }
 }
 

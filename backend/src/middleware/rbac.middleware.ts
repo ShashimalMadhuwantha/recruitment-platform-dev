@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserRole, RecruiterSubRole } from '@recruitment-platform/shared';
+import { UserRole, RecruiterSubRole, RecruiterPermissions } from '@recruitment-platform/shared';
 import { ForbiddenError, UnauthorizedError } from './error.middleware';
 
 /**
@@ -61,3 +61,64 @@ export const requireRecruiter = requireRole('RECRUITER', 'SUPER_ADMIN');
 export const requireApplicant = requireRole('APPLICANT');
 export const requireCompanyAdmin = requireRecruiterSubRole('COMPANY_ADMIN');
 export const requireHiringManager = requireRecruiterSubRole('COMPANY_ADMIN', 'HIRING_MANAGER');
+
+/**
+ * Checks if the authenticated recruiter has a specific granular permission flag enabled,
+ * or is a COMPANY_ADMIN / SUPER_ADMIN (which bypasses granular permission flags).
+ */
+export const requireRecruiterPermission = (permissionKey: keyof RecruiterPermissions) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return next(new UnauthorizedError('Authentication required'));
+    }
+
+    if (req.user.role === 'SUPER_ADMIN') {
+      return next();
+    }
+
+    if (req.user.role !== 'RECRUITER') {
+      return next(new ForbiddenError('Recruiter access required'));
+    }
+
+    // Company Admin has all recruiter permissions enabled by default
+    if (req.user.recruiterSubRole === 'COMPANY_ADMIN') {
+      return next();
+    }
+
+    const permissions = (req.user.recruiterPermissions as Partial<RecruiterPermissions> | undefined) || {};
+    if (permissions[permissionKey] === true) {
+      return next();
+    }
+
+    // Check subrole defaults if permission flag not explicitly overridden
+    if (req.user.recruiterSubRole === 'HIRING_MANAGER') {
+      const hiringManagerDefaults: (keyof RecruiterPermissions)[] = [
+        'canCreateJobs',
+        'canEditJobs',
+        'canDeleteJobs',
+        'canViewCandidateSalary',
+        'canAdvancePipeline',
+        'canScheduleInterviews',
+        'canSubmitScorecards',
+        'canExtendOffers',
+        'canViewAnalytics',
+      ];
+      if (hiringManagerDefaults.includes(permissionKey) && permissions[permissionKey] !== false) {
+        return next();
+      }
+    } else if (req.user.recruiterSubRole === 'INTERVIEWER') {
+      const interviewerDefaults: (keyof RecruiterPermissions)[] = [
+        'canScheduleInterviews',
+        'canSubmitScorecards',
+      ];
+      if (interviewerDefaults.includes(permissionKey) && permissions[permissionKey] !== false) {
+        return next();
+      }
+    }
+
+    return next(
+      new ForbiddenError(`Missing required permission: '${permissionKey}'`)
+    );
+  };
+};
+

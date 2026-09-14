@@ -130,6 +130,13 @@ enum GdprRequestStatus {
   REJECTED
 }
 
+enum TeamInvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
 enum NotificationChannel {
   EMAIL
   IN_APP
@@ -185,6 +192,7 @@ model User {
   reportsCreated      ContentReport[]     @relation("ReportedByUser")
   gdprRequests        GdprRequest[]
   candidateNotes      CandidateNote[]     @relation("UserCandidateNotes")
+  sentTeamInvitations TeamInvitation[]    @relation("SentTeamInvitations")
 
   @@map("users")
 }
@@ -300,6 +308,10 @@ model Company {
   logoUrl     String?       @map("logo_url")
   website     String?
   description String?       @db.Text
+  coverPhotoUrl    String?  @map("cover_photo_url")
+  locationsJson    Json?    @map("locations_json")
+  cultureMediaJson Json?    @map("culture_media_json")
+  socialLinksJson  Json?    @map("social_links_json")
   planId      String?       @map("plan_id")
   status      CompanyStatus @default(PENDING_APPROVAL)
   createdAt   DateTime      @default(now()) @map("created_at")
@@ -310,8 +322,31 @@ model Company {
   jobVacancies       JobVacancy[]
   scoreWeightConfigs ScoreWeightConfig[]
   diversitySurveyResponses DiversitySurveyResponse[]
+  teamInvitations    TeamInvitation[]
 
   @@map("companies")
+}
+
+model TeamInvitation {
+  id          String               @id @default(uuid())
+  companyId   String               @map("company_id")
+  email       String
+  subRole     RecruiterSubRole     @default(HIRING_MANAGER) @map("sub_role")
+  permissions Json?
+  tokenHash   String               @unique @map("token_hash")
+  status      TeamInvitationStatus @default(PENDING)
+  invitedById String               @map("invited_by_id")
+  expiresAt   DateTime             @map("expires_at")
+  acceptedAt  DateTime?            @map("accepted_at")
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  invitedBy User    @relation("SentTeamInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+  @@index([email])
+  @@map("team_invitations")
 }
 
 // -------------------------------------------------------------

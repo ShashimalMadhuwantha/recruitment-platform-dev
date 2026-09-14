@@ -16,6 +16,9 @@ import RecruiterJobsPage from '../pages/recruiter/RecruiterJobsPage';
 import JobCreationWizardPage from '../pages/recruiter/JobCreationWizardPage';
 import TalentPoolPage from '../pages/recruiter/TalentPoolPage';
 import CompanyAnalyticsPage from '../pages/recruiter/CompanyAnalyticsPage';
+import RecruiterTeamPage from '../pages/recruiter/RecruiterTeamPage';
+import CompanyProfilePage from '../pages/recruiter/CompanyProfilePage';
+import AcceptInvitePage from '../pages/auth/AcceptInvitePage';
 import AdminOverviewPage from '../pages/admin/AdminOverviewPage';
 import AdminCompaniesPage from '../pages/admin/AdminCompaniesPage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
@@ -46,6 +49,7 @@ export const AppRouter: React.FC = () => {
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/mfa" element={<MfaVerificationPage />} />
           <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+          <Route path="/invite/accept" element={<AcceptInvitePage />} />
 
           {/* Protected Applicant Routes */}
           <Route
@@ -135,6 +139,22 @@ export const AppRouter: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
                 <CompanyAnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recruiter/team"
+            element={
+              <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
+                <RecruiterTeamPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recruiter/company-profile"
+            element={
+              <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
+                <CompanyProfilePage />
               </ProtectedRoute>
             }
           />

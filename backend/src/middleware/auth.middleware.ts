@@ -30,6 +30,10 @@ export const authenticateToken = (req: Request, _res: Response, next: NextFuncti
       role: UserRole;
       status: UserStatus;
       companyId?: string | null;
+      recruiterSubRole?: any;
+      recruiterPermissions?: any;
+      isImpersonating?: boolean;
+      impersonatorId?: string | null;
     };
 
     req.user = {
@@ -38,6 +42,10 @@ export const authenticateToken = (req: Request, _res: Response, next: NextFuncti
       role: payload.role,
       status: payload.status,
       companyId: payload.companyId,
+      recruiterSubRole: payload.recruiterSubRole || null,
+      recruiterPermissions: payload.recruiterPermissions || null,
+      isImpersonating: payload.isImpersonating || false,
+      impersonatorId: payload.impersonatorId || null,
     };
 
     next();
@@ -61,6 +69,10 @@ export const optionalAuthenticateToken = (req: Request, _res: Response, next: Ne
       role: UserRole;
       status: UserStatus;
       companyId?: string | null;
+      recruiterSubRole?: any;
+      recruiterPermissions?: any;
+      isImpersonating?: boolean;
+      impersonatorId?: string | null;
     };
 
     req.user = {
@@ -69,6 +81,10 @@ export const optionalAuthenticateToken = (req: Request, _res: Response, next: Ne
       role: payload.role,
       status: payload.status,
       companyId: payload.companyId,
+      recruiterSubRole: payload.recruiterSubRole || null,
+      recruiterPermissions: payload.recruiterPermissions || null,
+      isImpersonating: payload.isImpersonating || false,
+      impersonatorId: payload.impersonatorId || null,
     };
 
     next();
