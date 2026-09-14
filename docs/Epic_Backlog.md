@@ -250,6 +250,19 @@
 
 ---
 
+## Epic 17 — Recruiter: Company, Team & Subscription Plan Seat Management
+**Goal:** Empower tenant organizations to manage company profile branding, invite and manage team members with recruiter sub-roles (Company Admin, Hiring Manager, Interviewer), configure role permissions, and strictly align team size and active postings with their assigned subscription plan seat limits (FR-RC-01 to FR-RC-03, FR-SA-03).
+
+| Task | Purpose | Branch |
+|---|---|---|
+| Company profile & branding setup | Let recruiters configure company profile details (logo upload, description, industry, company size, website, locations, and culture media) to represent the tenant brand to applicants (FR-RC-01). | `feature/17-company-profile-branding` |
+| Team member invitation & onboarding workflow | Let Company Admins invite team members by email with time-limited secure invitation tokens and pre-assigned sub-roles (`HIRING_MANAGER`, `INTERVIEWER`) (FR-RC-02). | `feature/17-team-invitations` |
+| Recruiter sub-role & permissions matrix | Manage recruiter sub-roles (`COMPANY_ADMIN`, `HIRING_MANAGER`, `INTERVIEWER`) with granular permission flags (job posting, viewing candidate salary, advancing pipeline stages, scheduling interviews, extending offers) (FR-RC-02). | `feature/17-subrole-permissions` |
+| Subscription plan seat quota & usage enforcement | Track and display real-time plan usage (seats used vs `plan.maxSeats`, active jobs vs `plan.maxJobPosts`, ATS scans quota); strictly enforce hard seat limits to prevent over-allocation with upgrade prompts (FR-RC-03, FR-SA-03). | `feature/17-plan-seat-quota-enforcement` |
+| Team member offboarding, requisition transfer & seat release | Safely deactivate or remove team members, transfer their open requisitions and candidate pipeline assignments, and release seat licenses back to the company pool (FR-RC-02). | `feature/17-team-offboarding-seat-release` |
+
+---
+
 ## Suggested build order
 1. **Epic 0 → Epic 1** (setup + auth) — nothing else can start without these.
 2. **Epic 8 → Epic 9** (applicant profile + CV) and **Epic 6** (recruiter job posting) can run in parallel once auth is done — they produce the data the ATS engine needs.
@@ -258,3 +271,5 @@
 5. **Epic 2 → Epic 5** (Super Admin epics) can run in parallel with the above once Epic 1 (RBAC) is done.
 6. **Epic 12 → Epic 13 → Epic 14** (communication, offers, analytics) — later-stage polish, once the core apply/hire loop works.
 7. **Epic 15** and **Epic 16** — ongoing, with a final hardening pass before launch.
+8. **Epic 17** (recruiter company, team & plan seat management) — tenant organization governance, multi-recruiter sub-roles, and seat limits aligned to the company's subscription plan.
+
