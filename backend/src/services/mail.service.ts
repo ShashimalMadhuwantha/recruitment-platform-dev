@@ -74,6 +74,11 @@ export class MailService {
         return true;
       } catch (error: any) {
         console.error(`📧 [MailService] ❌ Failed to send reset email to ${to}:`, error.message || error);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('📧 [MailService Fallback - Local Dev] Password Reset link:');
+        console.log(`🔗 Target: ${to}`);
+        console.log(`🔗 Link:   ${resetUrl}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return false;
       }
     } else {
@@ -144,6 +149,12 @@ export class MailService {
         return true;
       } catch (error: any) {
         console.error(`📧 [MailService] ❌ Failed to send notification email via SMTP to ${to}:`, error.message || error);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`📧 [MailService Fallback - Local Dev Delivery] Email to: ${to}`);
+        console.log(`📌 Subject: ${subject}`);
+        console.log(`📝 Message: ${message}`);
+        if (actionUrl) console.log(`🔗 Link:    ${actionUrl}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         return false;
       }
     } else {
