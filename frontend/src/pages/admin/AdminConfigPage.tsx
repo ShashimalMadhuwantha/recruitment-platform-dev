@@ -1170,7 +1170,12 @@ const NotificationTemplatesTab: React.FC = () => {
       .replace(/{{\s*interview_type\s*}}/g, 'Zoom Video Call')
       .replace(/{{\s*meeting_link\s*}}/g, 'https://zoom.us/j/123456789')
       .replace(/{{\s*recruiter_name\s*}}/g, 'Sarah Jenkins')
-      .replace(/{{\s*admin_name\s*}}/g, 'John Doe');
+      .replace(/{{\s*admin_name\s*}}/g, 'John Doe')
+      .replace(/{{\s*base_salary\s*}}/g, '$145,000')
+      .replace(/{{\s*currency\s*}}/g, 'USD')
+      .replace(/{{\s*start_date\s*}}/g, 'October 1, 2026')
+      .replace(/{{\s*expiration_date\s*}}/g, 'September 25, 2026')
+      .replace(/{{\s*decline_reason\s*}}/g, 'Accepted an offer with another company');
   };
 
   return (

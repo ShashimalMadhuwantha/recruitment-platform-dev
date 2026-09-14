@@ -600,6 +600,11 @@ export class SystemConfigService {
       meeting_link: 'https://zoom.us/j/987654321',
       recruiter_name: 'Sarah Jenkins',
       admin_name: 'John Doe',
+      base_salary: '$145,000',
+      currency: 'USD',
+      start_date: 'October 1, 2026',
+      expiration_date: 'September 25, 2026',
+      decline_reason: 'Accepted an offer with another company',
       ...sampleData,
     };
 

@@ -183,6 +183,7 @@ describe('Epic 13: Offers & Hiring Unit Tests (FR-RC-24, FR-RC-25)', () => {
           'APPLICANT',
           {
             baseSalary: 200000,
+            currency: 'USD',
             startDate,
             expirationDate,
             autoSend: false,

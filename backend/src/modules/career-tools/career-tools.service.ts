@@ -88,7 +88,7 @@ export class CareerToolsService {
       // Fallback to profile assembled text
       const profileParts = [
         profile.summary || '',
-        ...profile.workExperiences.map((e) => `${e.title} at ${e.company}: ${e.description || ''}`),
+        ...profile.workExperiences.map((e) => `${e.title} at ${e.companyName}: ${e.description || ''}`),
         ...profile.educations.map((ed) => `${ed.degree} in ${ed.fieldOfStudy} at ${ed.institution}`),
         ...profile.applicantSkills.map((s) => s.skill.name),
       ];

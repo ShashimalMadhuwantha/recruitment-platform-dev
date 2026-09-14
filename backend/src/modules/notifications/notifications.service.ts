@@ -1,12 +1,73 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../db/client';
 import { MailService } from '../../services/mail.service';
 import { config } from '../../config';
 
-const prisma = new PrismaClient();
+const TEMPLATE_CODE_ALIASES: Record<string, string[]> = {
+  JOB_OFFER_RECEIVED: ['JOB_OFFER_RECEIVED', 'OFFER_EXTENDED', 'OFFER_SENT'],
+  OFFER_ACCEPTED: ['OFFER_ACCEPTED', 'OFFER_ACCEPT'],
+  OFFER_DECLINED: ['OFFER_DECLINED', 'OFFER_DECLINE'],
+  CANDIDATE_HIRED: ['CANDIDATE_HIRED', 'HIRED', 'APPLICANT_HIRED'],
+  STAGE_CHANGE: ['APP_STAGE_UPDATE', 'STAGE_CHANGE'],
+  INTERVIEW_SCHEDULED: ['INTERVIEW_INVITE', 'INTERVIEW_SCHEDULED'],
+};
 
 export class NotificationService {
   /**
-   * Create an in-app notification and optionally trigger email
+   * Helper: Normalize token variables to support both snake_case and camelCase placeholders
+   */
+  private normalizeVariables(variables: Record<string, any>): Record<string, any> {
+    const normalized: Record<string, any> = {};
+    for (const [k, v] of Object.entries(variables)) {
+      if (k === 'templateVariables') continue;
+      normalized[k] = v;
+      const camelKey = k.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
+      normalized[camelKey] = v;
+      const snakeKey = k.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+      normalized[snakeKey] = v;
+    }
+    return normalized;
+  }
+
+  /**
+   * Render an admin template with supplied variables
+   */
+  async renderTemplate(
+    typeOrCode: string,
+    variables: Record<string, any>
+  ): Promise<{ subject: string; body: string; templateName: string } | null> {
+    const codesToTry = TEMPLATE_CODE_ALIASES[typeOrCode] || [typeOrCode];
+    const template = await prisma.notificationTemplate.findFirst({
+      where: {
+        code: { in: codesToTry },
+        isActive: true,
+      },
+    });
+
+    if (!template) {
+      return null;
+    }
+
+    const normalized = this.normalizeVariables(variables);
+    let renderedSubject = template.subject;
+    let renderedBody = template.body;
+
+    for (const [key, value] of Object.entries(normalized)) {
+      if (value !== undefined && value !== null && typeof value !== 'object') {
+        const tokenRegex = new RegExp(`{{\\s*${key}\\s*}}`, 'gi');
+        renderedSubject = renderedSubject.replace(tokenRegex, String(value));
+        renderedBody = renderedBody.replace(tokenRegex, String(value));
+      }
+    }
+
+    return {
+      subject: renderedSubject,
+      body: renderedBody,
+      templateName: template.name,
+    };
+  }
+
+  /**
+   * Create an in-app notification and optionally trigger email using Admin Email Templates
    */
   async createNotification(
     userId: string,
@@ -15,7 +76,8 @@ export class NotificationService {
     message: string,
     link?: string | null,
     payloadJson?: any,
-    sendEmailNotification: boolean = true
+    sendEmailNotification: boolean = true,
+    customVariables?: Record<string, string | number | null | undefined>
   ) {
     const notification = await prisma.notification.create({
       data: {
@@ -43,13 +105,31 @@ export class NotificationService {
                 ? link
                 : `${config.FRONTEND_URL}${link}`
               : config.FRONTEND_URL;
+
+            // Collect all available token variables
+            const rawVariables: Record<string, any> = {
+              portal_url: actionUrl,
+              portalUrl: actionUrl,
+              action_url: actionUrl,
+              ...(payloadJson?.templateVariables || {}),
+              ...(typeof payloadJson === 'object' && payloadJson !== null ? payloadJson : {}),
+              ...(customVariables || {}),
+            };
+
+            // Attempt to resolve against Admin Notification Templates
+            const rendered = await this.renderTemplate(type, rawVariables);
+
+            const emailSubject = rendered ? rendered.subject : `[RecruitATS] ${title}`;
+            const emailTitle = rendered ? rendered.templateName : title;
+            const emailBody = rendered ? rendered.body : message;
+
             await MailService.sendNotificationEmail(
               user.email,
-              `[RecruitATS] ${title}`,
-              title,
-              message,
+              emailSubject,
+              emailTitle,
+              emailBody,
               actionUrl,
-              'View Notification'
+              'View in Platform'
             );
           }
         } catch (err) {

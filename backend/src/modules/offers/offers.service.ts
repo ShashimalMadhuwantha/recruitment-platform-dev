@@ -1,4 +1,6 @@
-import { PrismaClient, JobStatus, ApplicationStatus, OfferStatus } from '@prisma/client';
+import { JobStatus, ApplicationStatus, OfferStatus } from '@prisma/client';
+import { prisma } from '../../db/client';
+import { config } from '../../config';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../../middleware/error.middleware';
 import { notificationService } from '../notifications/notifications.service';
 import type {
@@ -7,8 +9,6 @@ import type {
   HireCandidateInput,
 } from './offers.types';
 import type { JobOfferDto } from '@recruitment-platform/shared';
-
-const prisma = new PrismaClient();
 
 export class OffersService {
   /**
@@ -292,15 +292,46 @@ export class OffersService {
     }
 
     const candidateName = `${application.applicant.firstName} ${application.applicant.lastName}`.trim();
+    const formattedSalary = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: offer.currency || 'USD',
+    }).format(Number(offer.baseSalary));
+    const formattedStartDate = new Date(offer.startDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const formattedExpirationDate = new Date(offer.expirationDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const recruiterName =
+      updatedOffer.createdBy?.recruiterProfile?.title ||
+      updatedOffer.createdBy?.email.split('@')[0] ||
+      'Recruitment Team';
+    const portalUrl = `${config.FRONTEND_URL}/applicant/dashboard`;
 
-    // Notify candidate
+    // Notify candidate with dynamic template variables
     await notificationService.createNotification(
       application.applicant.userId,
       'JOB_OFFER_RECEIVED',
       `Official Job Offer Extended: ${application.job.title}`,
       `Congratulations ${candidateName}! ${application.job.company.name} has extended you an official job offer for ${application.job.title}. Please review the terms and respond.`,
       `/applicant/dashboard`,
-      { applicationId: offer.applicationId, offerId: offer.id }
+      {
+        applicationId: offer.applicationId,
+        offerId: offer.id,
+        candidate_name: candidateName,
+        job_title: application.job.title,
+        company_name: application.job.company.name,
+        base_salary: formattedSalary,
+        currency: offer.currency || 'USD',
+        start_date: formattedStartDate,
+        expiration_date: formattedExpirationDate,
+        recruiter_name: recruiterName,
+        portal_url: portalUrl,
+      }
     );
 
     return this.mapToDto(updatedOffer, application, candidateName);
@@ -463,13 +494,35 @@ export class OffersService {
             data.declinedReason ? ` Reason: "${data.declinedReason}"` : ''
           }`;
 
+    const formattedStartDate = new Date(offer.startDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const recruiterName =
+      offer.createdBy?.recruiterProfile?.title ||
+      offer.createdBy?.email.split('@')[0] ||
+      'Recruiter';
+    const declineReason = data.declinedReason?.trim() || 'Candidate declined without specific feedback.';
+    const portalUrl = `${config.FRONTEND_URL}/recruiter/pipeline`;
+
     await notificationService.createNotification(
       offer.createdById,
       notificationType,
       notificationTitle,
       notificationMessage,
       `/recruiter/pipeline`,
-      { offerId: offer.id, applicationId: offer.applicationId }
+      {
+        offerId: offer.id,
+        applicationId: offer.applicationId,
+        recruiter_name: recruiterName,
+        candidate_name: candidateName,
+        job_title: offer.application.job.title,
+        company_name: offer.application.job.company.name,
+        start_date: formattedStartDate,
+        decline_reason: declineReason,
+        portal_url: portalUrl,
+      }
     );
 
     return this.mapToDto(updatedOffer, offer.application, candidateName);
@@ -524,14 +577,35 @@ export class OffersService {
 
     const candidateName = `${application.applicant.firstName} ${application.applicant.lastName}`.trim();
 
-    // 4. Notify candidate
+    // Retrieve start date from accepted offer if available
+    const existingOffer = await prisma.jobOffer.findUnique({
+      where: { applicationId },
+      select: { startDate: true },
+    });
+    const formattedStartDate = existingOffer?.startDate
+      ? new Date(existingOffer.startDate).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : 'To be confirmed by hiring manager';
+    const portalUrl = `${config.FRONTEND_URL}/applicant/dashboard`;
+
+    // 4. Notify candidate referencing admin email template
     await notificationService.createNotification(
       application.applicant.userId,
       'CANDIDATE_HIRED',
       `Welcome to ${application.job.company.name}!`,
       `Congratulations ${candidateName}! Your hiring process for ${application.job.title} is now complete.`,
       `/applicant/dashboard`,
-      { applicationId }
+      {
+        applicationId,
+        candidate_name: candidateName,
+        job_title: application.job.title,
+        company_name: application.job.company.name,
+        start_date: formattedStartDate,
+        portal_url: portalUrl,
+      }
     );
 
     return {

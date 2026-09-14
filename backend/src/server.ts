@@ -3,6 +3,7 @@ import { config } from './config';
 import { logger } from './middleware/logging.middleware';
 import { prisma } from './db/client';
 import { initBackgroundJobs } from './jobs';
+import { ensureStandardNotificationTemplates } from './modules/system-config/seed-templates';
 
 const server = app.listen(config.PORT, () => {
   logger.info(`🚀 Recruitment & ATS API Server running on port ${config.PORT} [${config.NODE_ENV}]`);
@@ -11,6 +12,9 @@ const server = app.listen(config.PORT, () => {
   // Start background job poller (only in production or non-test dev)
   if (config.NODE_ENV !== 'test') {
     initBackgroundJobs();
+    ensureStandardNotificationTemplates().catch((err) => {
+      logger.error('Failed to initialize standard notification templates:', err);
+    });
   }
 });
 
