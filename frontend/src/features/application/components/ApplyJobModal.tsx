@@ -47,6 +47,18 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
     }
   }, [profile, selectedCvId]);
 
+  // WCAG 2.1 AA: Dismiss modal on Escape key
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const cvs = profile?.cvs || [];
@@ -125,17 +137,6 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
       setValidationError(err?.response?.data?.message || err?.message || 'Failed to submit application.');
     }
   };
-
-  // WCAG 2.1 AA: Dismiss modal on Escape key
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
 
   return (
     <div
