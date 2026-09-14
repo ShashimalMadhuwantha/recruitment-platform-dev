@@ -126,8 +126,24 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
     }
   };
 
+  // WCAG 2.1 AA: Dismiss modal on Escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="apply-modal-title"
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+    >
       <div className="bg-surface border border-border-default rounded-xl max-w-xl w-full p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Header */}
         <div className="flex items-start justify-between pb-3 border-b border-border-default">
@@ -135,7 +151,9 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
             <span className="text-[11px] font-semibold text-brand-600 uppercase tracking-wider">
               Submit Application
             </span>
-            <h2 className="text-lg font-bold text-brand-900 mt-0.5">{job.title}</h2>
+            <h2 id="apply-modal-title" className="text-lg font-bold text-brand-900 mt-0.5">
+              {job.title}
+            </h2>
             <p className="text-xs text-text-secondary">{job.companyName} • {job.location || 'Remote'}</p>
           </div>
           <button

@@ -40,7 +40,7 @@ export const AppRouter: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-surface-muted">
       <ImpersonationBanner />
       <Header userRole={user?.role} userEmail={user?.email} onLogout={logout} />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />

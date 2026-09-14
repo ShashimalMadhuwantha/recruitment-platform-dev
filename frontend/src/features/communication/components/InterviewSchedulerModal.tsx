@@ -88,13 +88,29 @@ export const InterviewSchedulerModal: React.FC<InterviewSchedulerModalProps> = (
     }
   };
 
+  // WCAG 2.1 AA: Dismiss modal on Escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-2xs flex items-center justify-center p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="interview-modal-title"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-2xs flex items-center justify-center p-4"
+    >
       <div className="w-full max-w-xl bg-surface rounded-2xl shadow-2xl border border-border-default overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Header */}
         <div className="p-5 border-b border-border-default bg-surface-muted flex items-start justify-between">
           <div className="space-y-0.5">
-            <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
+            <h2 id="interview-modal-title" className="text-base font-bold text-text-primary flex items-center gap-2">
               <Calendar className="w-4 h-4 text-brand-600" />
               <span>Schedule Candidate Interview</span>
             </h2>

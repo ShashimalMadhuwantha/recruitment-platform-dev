@@ -41,6 +41,7 @@ Thumbs.db
 
 # Database / uploads
 uploads/
+backups/
 *.sqlite
 *.sqlite-journal
 prisma/*.db

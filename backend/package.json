@@ -19,6 +19,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:open-jobs": "tsx scripts/seed-open-jobs.ts",
     "db:seed:demo-applicant": "tsx scripts/seed-demo-applicant.ts",
+    "db:backup": "tsx scripts/backup-db.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {

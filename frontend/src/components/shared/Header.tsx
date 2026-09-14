@@ -29,6 +29,14 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
 
   return (
     <header className="h-16 bg-surface border-b border-border-default px-6 flex items-center justify-between sticky top-0 z-40">
+      {/* WCAG 2.1 AA: Skip to Main Content shortcut */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-slate-900 focus:text-white focus:text-xs focus:font-semibold focus:rounded-lg focus:shadow-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-transform"
+      >
+        Skip to main content
+      </a>
+
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-lg">

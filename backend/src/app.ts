@@ -3,7 +3,11 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { config } from './config';
 import { httpLogger } from './middleware/logging.middleware';
-import { apiRateLimiter } from './middleware/rate-limit.middleware';
+import {
+  apiRateLimiter,
+  atsScoringRateLimiter,
+  publicSearchRateLimiter,
+} from './middleware/rate-limit.middleware';
 import { errorHandler, NotFoundError } from './middleware/error.middleware';
 
 // Import domain module routers
@@ -29,8 +33,34 @@ import applicantPrivacyRouter from './modules/applicant-privacy/applicant-privac
 export const createApp = (): Express => {
   const app = express();
 
-  // Security Middleware
-  app.use(helmet());
+  // Security Middleware (NFR-01, NFR-03, NFR-05)
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+          imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+          connectSrc: ["'self'", 'https:', 'wss:', 'http://localhost:*'],
+          frameAncestors: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+      },
+      frameguard: {
+        action: 'deny',
+      },
+      referrerPolicy: {
+        policy: 'strict-origin-when-cross-origin',
+      },
+    })
+  );
   app.use(
     cors({
       origin: config.CORS_ORIGIN,
@@ -43,8 +73,12 @@ export const createApp = (): Express => {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(httpLogger);
 
-  // Rate Limiting
+  // Rate Limiting (NFR-05, NFR-09, NFR-10)
   app.use('/api', apiRateLimiter);
+  app.use('/api/v1/ats', atsScoringRateLimiter);
+  app.use('/api/v1/ats-scoring', atsScoringRateLimiter);
+  app.use('/api/v1/jobs', publicSearchRateLimiter);
+  app.use('/api/v1/companies', publicSearchRateLimiter);
 
   // Health Check Endpoint
   app.get('/api/health', (_req: Request, res: Response) => {
