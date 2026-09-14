@@ -114,6 +114,12 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             >
               Talent Pool
             </Link>
+            <Link
+              to="/recruiter/analytics"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Analytics
+            </Link>
           </nav>
         )}
 

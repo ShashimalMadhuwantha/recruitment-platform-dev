@@ -21,6 +21,7 @@ import talentPoolRouter from './modules/talent-pool/talent-pool.routes';
 import { applicationCommunicationRouter, interviewsRouter } from './modules/communication/communication.routes';
 import offersRouter from './modules/offers/offers.routes';
 import careerToolsRouter from './modules/career-tools/career-tools.routes';
+import analyticsRouter from './modules/analytics/analytics.routes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -84,6 +85,7 @@ export const createApp = (): Express => {
   app.use('/api/v1/talent-pool', talentPoolRouter);
   app.use('/api/v1/offers', offersRouter);
   app.use('/api/v1/career-tools', careerToolsRouter);
+  app.use('/api/v1/analytics', analyticsRouter);
 
   // 404 Handler
   app.use((req: Request, _res: Response, next: NextFunction) => {

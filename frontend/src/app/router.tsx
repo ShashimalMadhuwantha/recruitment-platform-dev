@@ -15,6 +15,7 @@ import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
 import RecruiterJobsPage from '../pages/recruiter/RecruiterJobsPage';
 import JobCreationWizardPage from '../pages/recruiter/JobCreationWizardPage';
 import TalentPoolPage from '../pages/recruiter/TalentPoolPage';
+import CompanyAnalyticsPage from '../pages/recruiter/CompanyAnalyticsPage';
 import AdminOverviewPage from '../pages/admin/AdminOverviewPage';
 import AdminCompaniesPage from '../pages/admin/AdminCompaniesPage';
 import AdminUsersPage from '../pages/admin/AdminUsersPage';
@@ -126,6 +127,14 @@ export const AppRouter: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
                 <TalentPoolPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recruiter/analytics"
+            element={
+              <ProtectedRoute allowedRoles={['RECRUITER', 'SUPER_ADMIN']}>
+                <CompanyAnalyticsPage />
               </ProtectedRoute>
             }
           />

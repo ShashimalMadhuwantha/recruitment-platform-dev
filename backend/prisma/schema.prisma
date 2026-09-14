@@ -309,6 +309,7 @@ model Company {
   recruiters         RecruiterProfile[]
   jobVacancies       JobVacancy[]
   scoreWeightConfigs ScoreWeightConfig[]
+  diversitySurveyResponses DiversitySurveyResponse[]
 
   @@map("companies")
 }
@@ -492,6 +493,7 @@ model JobVacancy {
   pipelineStages     PipelineStage[]
   scoreWeightConfigs ScoreWeightConfig[]
   savedJobs          SavedJob[]
+  diversitySurveyResponses DiversitySurveyResponse[]
 
   @@map("job_vacancies")
 }
@@ -534,6 +536,7 @@ model Application {
   jobId       String            @map("job_id")
   cvId        String?           @map("cv_id")
   status                 ApplicationStatus @default(APPLIED)
+  source                 String?           @default("DIRECT")
   coverLetter            String?           @map("cover_letter") @db.Text
   screeningAnswersJson   Json?             @map("screening_answers_json")
   appliedAt              DateTime          @default(now()) @map("applied_at")
@@ -549,6 +552,7 @@ model Application {
   interviewSchedules InterviewSchedule[]
   messages           ApplicationMessage[]
   jobOffer           JobOffer?
+  diversitySurvey    DiversitySurveyResponse?
 
   @@unique([applicantId, jobId])
   @@map("applications")
@@ -940,5 +944,29 @@ model FeatureFlag {
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("feature_flags")
+}
+
+// -------------------------------------------------------------
+// Diversity & Inclusion Survey Responses (FR-RC-23)
+// Decoupled from applicant profile cards; protected by k-anonymity (k >= 5)
+// -------------------------------------------------------------
+model DiversitySurveyResponse {
+  id               String   @id @default(uuid())
+  applicationId    String?  @unique @map("application_id")
+  companyId        String   @map("company_id")
+  jobId            String?  @map("job_id")
+  gender           String?  // Female, Male, Non-Binary, Prefer not to say
+  raceEthnicity    String?  @map("race_ethnicity") // Asian, Black/African American, Hispanic/Latino, White, Two or more races, Other, Prefer not to say
+  veteranStatus    String?  @map("veteran_status") // Veteran, Non-Veteran, Prefer not to say
+  disabilityStatus String?  @map("disability_status") // Yes, No, Prefer not to say
+  optedIn          Boolean  @default(true) @map("opted_in")
+  submittedAt      DateTime @default(now()) @map("submitted_at")
+
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  job         JobVacancy?  @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([companyId, jobId])
+  @@map("diversity_survey_responses")
 }
 

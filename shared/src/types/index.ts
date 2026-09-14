@@ -1230,3 +1230,131 @@ export interface ProfileImprovementResponseDto {
   generatedAt: string;
 }
 
+// -------------------------------------------------------------
+// Epic 14: Analytics & Reporting (Company Level) (FR-RC-21 to FR-RC-23)
+// -------------------------------------------------------------
+
+export interface CompanyAnalyticsSummaryDto {
+  totalApplications: number;
+  activeJobs: number;
+  avgAtsScore: number;
+  avgTimeToHireDays: number;
+  offerAcceptanceRate: number; // percentage, e.g. 85.5
+  pipelineVelocityDays: number;
+  trends: {
+    applicationsTrendPercent: number; // e.g. +14.2%
+    timeToHireTrendDays: number; // e.g. -2.1 days
+    offerAcceptanceTrendPercent: number; // e.g. +5.0%
+    atsScoreTrendPercent: number; // e.g. +1.8%
+  };
+}
+
+export interface FunnelStageMetricDto {
+  stage: string;
+  label: string;
+  count: number;
+  percentageOfTotal: number;
+  conversionFromPrev: number;
+  dropOffCount: number;
+  dropOffPercentage: number;
+}
+
+export interface CompanyFunnelResponseDto {
+  stages: FunnelStageMetricDto[];
+  totalApplications: number;
+  totalHired: number;
+  overallConversionRate: number;
+}
+
+export interface SourceAttributionDto {
+  source: string;
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+export interface CompanySourcesResponseDto {
+  sources: SourceAttributionDto[];
+  total: number;
+}
+
+export interface ApplicationVelocityPointDto {
+  date: string;
+  label: string;
+  count: number;
+}
+
+export interface ApplicationVelocityResponseDto {
+  interval: 'day' | 'week' | 'month';
+  points: ApplicationVelocityPointDto[];
+  total: number;
+}
+
+export interface AtsScoreDistributionDto {
+  strongMatchCount: number; // >= 80%
+  strongMatchPercentage: number;
+  partialMatchCount: number; // 50-79%
+  partialMatchPercentage: number;
+  weakMatchCount: number; // < 50%
+  weakMatchPercentage: number;
+  totalScored: number;
+  averageScore: number;
+}
+
+export interface DiversityCategoryCountDto {
+  category: string;
+  count: number;
+  percentage: number;
+}
+
+export interface DiversityAnalyticsDto {
+  totalRespondents: number;
+  isProtected: boolean; // true if totalRespondents < 5 (k-anonymity privacy guarantee)
+  protectionMessage?: string;
+  genderBreakdown: DiversityCategoryCountDto[];
+  raceBreakdown: DiversityCategoryCountDto[];
+  veteranBreakdown: DiversityCategoryCountDto[];
+  disabilityBreakdown: DiversityCategoryCountDto[];
+}
+
+export interface SubmitDiversitySurveyDto {
+  applicationId?: string;
+  companyId: string;
+  jobId?: string;
+  gender?: string;
+  raceEthnicity?: string;
+  veteranStatus?: string;
+  disabilityStatus?: string;
+  optedIn: boolean;
+}
+
+export interface CandidateExportItemDto {
+  applicationId: string;
+  candidateName: string;
+  candidateEmail: string;
+  jobTitle: string;
+  stage: string;
+  atsScore: number | null;
+  scoreBand: string | null;
+  source: string;
+  appliedAt: string;
+  updatedAt: string;
+  timeInPipelineDays: number;
+}
+
+export interface CandidateExportResponseDto {
+  totalCandidates: number;
+  exportedAt: string;
+  candidates: CandidateExportItemDto[];
+}
+
+export interface AnalyticsFilterParams {
+  jobId?: string;
+  startDate?: string;
+  endDate?: string;
+  interval?: 'day' | 'week' | 'month';
+  stage?: string;
+  scoreBand?: ScoreBand | string;
+}
+
+
