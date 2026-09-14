@@ -84,4 +84,75 @@ export class MailService {
       return false;
     }
   }
+
+  /**
+   * Sends a general notification email (stage change, interview, message)
+   */
+  static async sendNotificationEmail(
+    to: string,
+    subject: string,
+    title: string,
+    message: string,
+    actionUrl?: string,
+    actionText?: string
+  ): Promise<boolean> {
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #1e293b; }
+            .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+            .header { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 16px; }
+            .content { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; white-space: pre-line; }
+            .button-wrapper { text-align: center; margin: 28px 0; }
+            .button { display: inline-block; padding: 12px 24px; font-size: 14px; font-weight: 600; color: #ffffff !important; background-color: #2563eb; border-radius: 6px; text-decoration: none; }
+            .footer { font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px; margin-top: 24px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">${title}</div>
+            <div class="content">${message}</div>
+            ${
+              actionUrl
+                ? `<div class="button-wrapper">
+                    <a href="${actionUrl}" class="button" target="_blank">${actionText || 'View in Platform'}</a>
+                   </div>`
+                : ''
+            }
+            <div class="footer">
+              RecruitATS Platform &bull; Notification Service
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    if (this.transporter) {
+      try {
+        await this.transporter.sendMail({
+          from: config.SMTP_FROM,
+          to,
+          subject,
+          html: htmlContent,
+          text: `${title}\n\n${message}\n\n${actionUrl || ''}`,
+        });
+        return true;
+      } catch (error) {
+        console.error('❌ Failed to send notification email via SMTP:', error);
+        return false;
+      }
+    } else {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log(`📧 [MailService] Notification Email to: ${to}`);
+      console.log(`📌 Subject: ${subject}`);
+      console.log(`📝 Message: ${message}`);
+      if (actionUrl) console.log(`🔗 Link:    ${actionUrl}`);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      return false;
+    }
+  }
 }
+

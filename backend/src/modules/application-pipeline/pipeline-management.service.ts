@@ -14,6 +14,7 @@ import {
   ForbiddenError,
   BadRequestError,
 } from '../../middleware/error.middleware';
+import { notificationService } from '../notifications/notifications.service';
 
 const STAGE_ORDER_MAP: Record<ApplicationStatus, number> = {
   APPLIED: 1,
@@ -308,7 +309,7 @@ export class PipelineManagementService {
 
     const application = await prisma.application.findUnique({
       where: { id: applicationId },
-      include: { job: true },
+      include: { job: true, applicant: true },
     });
 
     if (!application) {
@@ -349,6 +350,20 @@ export class PipelineManagementService {
       }),
     ]);
 
+    // Notify candidate of status change (FR-AP-27)
+    try {
+      await notificationService.createNotification(
+        application.applicant.userId,
+        'APPLICATION_STATUS_CHANGED',
+        `Application Status Update: ${targetStage.name}`,
+        `Your application for ${application.job.title} has progressed to ${targetStage.name}.`,
+        `/applicant/dashboard`,
+        { applicationId, fromStage: application.status, toStage: dto.stage }
+      );
+    } catch (err) {
+      console.error('Failed to create status notification:', err);
+    }
+
     return {
       success: true,
       applicationId: updatedApplication.id,
@@ -367,40 +382,42 @@ export class PipelineManagementService {
     userRole: string,
     dto: BulkMoveCandidateStageDto
   ) {
-    if (!dto.applicationIds || !Array.isArray(dto.applicationIds) || dto.applicationIds.length === 0) {
-      throw new BadRequestError('applicationIds must be a non-empty array of application IDs.');
-    }
-
     if (!dto.stage || !Object.values(ApplicationStatus).includes(dto.stage)) {
       throw new BadRequestError(`Invalid application status: ${dto.stage}`);
     }
 
+    if (!dto.applicationIds || dto.applicationIds.length === 0) {
+      throw new BadRequestError('At least one applicationId must be provided.');
+    }
+
+    // Verify applications exist and recruiter has access
     const applications = await prisma.application.findMany({
       where: { id: { in: dto.applicationIds } },
-      include: { job: true },
+      include: { job: true, applicant: true },
     });
 
     if (applications.length === 0) {
-      throw new NotFoundError('No matching applications found.');
+      throw new NotFoundError('No valid applications found.');
     }
 
-    // Verify recruiter access to each job
+    // Check recruiter access for all jobs involved
     const jobIds = Array.from(new Set(applications.map((a) => a.jobId)));
-    for (const jobId of jobIds) {
-      await this.verifyRecruiterJobAccess(jobId, userId, userRole);
+    for (const jId of jobIds) {
+      await this.verifyRecruiterJobAccess(jId, userId, userRole);
     }
 
-    const validAppIds = applications.map((a) => a.id);
-
-    // Group by job to resolve stages
+    // Resolve or create stages for each job
     const jobStageMap = new Map<string, string>();
     for (const jId of jobIds) {
       const stage = await this.getOrCreateStage(jId, dto.stage);
       jobStageMap.set(jId, stage.id);
     }
 
+    const validAppIds = applications.map((a) => a.id);
+
+    // Update in transaction
     await prisma.$transaction(async (tx) => {
-      // Update applications status
+      // Bulk update application status
       await tx.application.updateMany({
         where: { id: { in: validAppIds } },
         data: { status: dto.stage },
@@ -434,6 +451,21 @@ export class PipelineManagementService {
         },
       });
     });
+
+    for (const app of applications) {
+      try {
+        await notificationService.createNotification(
+          app.applicant.userId,
+          'APPLICATION_STATUS_CHANGED',
+          `Application Status Update: ${dto.stage}`,
+          `Your application for ${app.job.title} has progressed to ${dto.stage}.`,
+          `/applicant/dashboard`,
+          { applicationId: app.id, toStage: dto.stage }
+        );
+      } catch (err) {
+        console.error('Failed to create bulk status notification:', err);
+      }
+    }
 
     return {
       success: true,

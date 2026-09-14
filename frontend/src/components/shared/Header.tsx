@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserRole } from '@recruitment-platform/shared';
 import { Button } from '../ui/Button';
 
+import { NotificationBell } from './NotificationBell';
+
 export interface HeaderProps {
   userRole?: UserRole;
   userEmail?: string;
@@ -148,6 +150,7 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
       <div className="flex items-center gap-3">
         {userEmail ? (
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <span className="text-xs text-text-secondary">{userEmail}</span>
             <Button
               variant="ghost"

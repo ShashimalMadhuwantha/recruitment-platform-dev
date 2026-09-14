@@ -18,6 +18,7 @@ import adminRouter from './modules/admin/admin.routes';
 import moderationRouter from './modules/moderation/moderation.routes';
 import systemConfigRouter from './modules/system-config/system-config.routes';
 import talentPoolRouter from './modules/talent-pool/talent-pool.routes';
+import { applicationCommunicationRouter, interviewsRouter } from './modules/communication/communication.routes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -70,7 +71,9 @@ export const createApp = (): Express => {
   app.use('/api/v1/jobs', jobSearchRouter);
   app.use('/api/v1/job-vacancies', jobVacancyRouter);
   app.use('/api/v1/applications', applicationPipelineRouter);
+  app.use('/api/v1/applications', applicationCommunicationRouter);
   app.use('/api/v1/application-pipelines', applicationPipelineRouter);
+  app.use('/api/v1/interviews', interviewsRouter);
   app.use('/api/v1/notifications', notificationsRouter);
   app.use('/api/v1/taxonomy', systemConfigRouter);
   app.use('/api/v1/admin/config', systemConfigRouter);

@@ -17,7 +17,12 @@ import {
   MapPin,
   ExternalLink,
   Trash2,
+  MessageSquare,
+  Video,
+  X,
 } from 'lucide-react';
+import { ApplicationMessageDrawer } from '../../features/communication/components/ApplicationMessageDrawer';
+import { InterviewScheduleList } from '../../features/communication/components/InterviewScheduleList';
 
 export const ApplicantDashboardPage: React.FC = () => {
   const { data: profile } = useApplicantProfile();
@@ -32,6 +37,8 @@ export const ApplicantDashboardPage: React.FC = () => {
   const [previewJobId, setPreviewJobId] = useState<string | null>(null);
   const [withdrawingApp, setWithdrawingApp] = useState<ApplicantApplicationListItem | null>(null);
   const [withdrawReason, setWithdrawReason] = useState('');
+  const [messagingApp, setMessagingApp] = useState<ApplicantApplicationListItem | null>(null);
+  const [interviewsApp, setInterviewsApp] = useState<ApplicantApplicationListItem | null>(null);
 
   // Calculate stats from live applications
   const validScores = applications
@@ -187,7 +194,7 @@ export const ApplicantDashboardPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
                     {app.overallScore !== null && app.overallScore !== undefined ? (
                       <ScoreBadge score={app.overallScore} size="sm" />
                     ) : (
@@ -195,6 +202,32 @@ export const ApplicantDashboardPage: React.FC = () => {
                     )}
 
                     <StatusPill status={app.status} />
+
+                    {/* In-app messaging action */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs gap-1 text-brand-600 border-brand-200 hover:bg-brand-50"
+                      onClick={() => setMessagingApp(app)}
+                      title="Direct Chat with Hiring Team"
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      <span>Messages</span>
+                    </Button>
+
+                    {/* Interview schedule details action */}
+                    {app.status === 'INTERVIEW' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs gap-1 text-emerald-700 border-emerald-300 bg-emerald-50/50 hover:bg-emerald-100/60"
+                        onClick={() => setInterviewsApp(app)}
+                        title="View scheduled interview, join link, and calendar export"
+                      >
+                        <Calendar className="w-3 h-3 text-emerald-600" />
+                        <span>Interviews</span>
+                      </Button>
+                    )}
 
                     {/* Withdrawal action */}
                     {app.canWithdraw && (
@@ -347,6 +380,57 @@ export const ApplicantDashboardPage: React.FC = () => {
           isOpen={Boolean(previewJobId)}
           onClose={() => setPreviewJobId(null)}
         />
+      )}
+
+      {/* Epic 12 In-App Direct Messaging Drawer */}
+      {messagingApp && (
+        <ApplicationMessageDrawer
+          isOpen={Boolean(messagingApp)}
+          onClose={() => setMessagingApp(null)}
+          applicationId={messagingApp.id}
+          candidateName="Hiring Team"
+          jobTitle={messagingApp.jobTitle}
+        />
+      )}
+
+      {/* Epic 12 Interview Schedules & Video Call Modal */}
+      {interviewsApp && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-2xs flex items-center justify-center p-4">
+          <div className="w-full max-w-xl bg-surface rounded-2xl shadow-2xl border border-border-default overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-4 border-b border-border-default bg-surface-muted flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-brand-600" />
+                  <span>Your Scheduled Interviews</span>
+                </h3>
+                <p className="text-xs text-text-secondary">
+                  For {interviewsApp.jobTitle} at {interviewsApp.companyName}
+                </p>
+              </div>
+              <button
+                onClick={() => setInterviewsApp(null)}
+                className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 max-h-[70vh] overflow-y-auto">
+              <InterviewScheduleList
+                applicationId={interviewsApp.id}
+                candidateName="You"
+                jobTitle={interviewsApp.jobTitle}
+                isRecruiter={false}
+              />
+            </div>
+
+            <div className="p-3 bg-surface-muted border-t border-border-default flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => setInterviewsApp(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

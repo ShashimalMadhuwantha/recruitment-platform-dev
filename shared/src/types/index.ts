@@ -994,3 +994,121 @@ export interface TalentPoolCandidateDto {
   cvFileName?: string | null;
   profileVisibility: 'PUBLIC' | 'BLIND';
 }
+
+// -------------------------------------------------------------
+// Epic 12: Communication, Scheduling & Notifications
+// -------------------------------------------------------------
+export interface ApplicationMessageDto {
+  id: string;
+  applicationId: string;
+  senderId: string;
+  senderName?: string;
+  senderRole?: UserRole;
+  receiverId: string;
+  receiverName?: string;
+  body: string;
+  isRead: boolean;
+  readAt?: string | null;
+  createdAt: string;
+}
+
+export interface SendMessageDto {
+  body: string;
+}
+
+export type InterviewType = 'VIDEO' | 'PHONE' | 'IN_PERSON';
+export type InterviewStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'RESCHEDULED';
+
+export interface InterviewScheduleDto {
+  id: string;
+  applicationId: string;
+  candidateName?: string;
+  jobTitle?: string;
+  interviewerId: string;
+  interviewerName?: string;
+  title: string;
+  interviewType: InterviewType;
+  scheduledAt: string;
+  durationMins: number;
+  timezone: string;
+  videoLink?: string | null;
+  location?: string | null;
+  status: InterviewStatus;
+  notes?: string | null;
+  hasFeedback?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  feedbacks?: InterviewFeedbackDto[];
+}
+
+export interface CreateInterviewDto {
+  title?: string;
+  interviewType?: InterviewType;
+  scheduledAt: string;
+  durationMins?: number;
+  timezone?: string;
+  videoLink?: string;
+  location?: string;
+  notes?: string;
+}
+
+export interface UpdateInterviewStatusDto {
+  status: InterviewStatus;
+  notes?: string;
+}
+
+export type RecommendationType =
+  | 'STRONG_HIRE'
+  | 'HIRE'
+  | 'NEUTRAL'
+  | 'DO_NOT_HIRE'
+  | 'STRONG_DO_NOT_HIRE';
+
+export interface ScorecardRatingCriteria {
+  technicalCompetency: number; // 1 to 5
+  communication: number; // 1 to 5
+  problemSolving: number; // 1 to 5
+  experienceAlignment: number; // 1 to 5
+  culturalFit: number; // 1 to 5
+  overallAverage: number;
+}
+
+export interface InterviewFeedbackDto {
+  id: string;
+  interviewId: string;
+  interviewerId: string;
+  interviewerName?: string;
+  scorecardJson?: ScorecardRatingCriteria | Record<string, any> | null;
+  recommendation?: RecommendationType | string | null;
+  notes?: string | null;
+  submittedAt: string;
+  updatedAt?: string;
+}
+
+export interface SubmitFeedbackDto {
+  scorecard: ScorecardRatingCriteria;
+  recommendation: RecommendationType;
+  notes?: string;
+}
+
+export type NotificationType =
+  | 'APPLICATION_STATUS_CHANGED'
+  | 'NEW_MESSAGE'
+  | 'INTERVIEW_SCHEDULED'
+  | 'INTERVIEW_CANCELLED'
+  | 'FEEDBACK_SUBMITTED'
+  | 'SYSTEM_ALERT';
+
+export interface NotificationDto {
+  id: string;
+  userId: string;
+  type: NotificationType | string;
+  title: string;
+  message: string;
+  link?: string | null;
+  payloadJson?: Record<string, any> | null;
+  isRead: boolean;
+  readAt?: string | null;
+  createdAt: string;
+}
+

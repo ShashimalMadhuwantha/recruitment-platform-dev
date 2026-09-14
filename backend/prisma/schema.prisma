@@ -166,6 +166,8 @@ model User {
   auditLogs           AuditLog[]         @relation("ActorAuditLogs")
   sentMessages        Message[]          @relation("SentMessages")
   receivedMessages    Message[]          @relation("ReceivedMessages")
+  sentAppMessages     ApplicationMessage[] @relation("SentApplicationMessages")
+  receivedAppMessages ApplicationMessage[] @relation("ReceivedApplicationMessages")
   notifications       Notification[]
   jobVacanciesCreated JobVacancy[]       @relation("CreatedJobs")
   interviewSchedules  InterviewSchedule[] @relation("InterviewerSchedules")
@@ -535,6 +537,7 @@ model Application {
   candidatePipelines CandidatePipeline[]
   candidateNotes     CandidateNote[]
   interviewSchedules InterviewSchedule[]
+  messages           ApplicationMessage[]
 
   @@unique([applicantId, jobId])
   @@map("applications")
@@ -644,18 +647,24 @@ model InterviewSchedule {
   id            String    @id @default(uuid())
   applicationId String    @map("application_id")
   interviewerId String    @map("interviewer_id")
+  title         String    @default("Interview")
+  interviewType String    @default("VIDEO") @map("interview_type") // VIDEO, PHONE, IN_PERSON
   scheduledAt   DateTime  @map("scheduled_at")
   durationMins  Int       @default(45) @map("duration_mins")
+  timezone      String    @default("UTC")
   videoLink     String?   @map("video_link")
   location      String?
-  status        String    @default("SCHEDULED")
+  status        String    @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED, RESCHEDULED
   notes         String?   @db.Text
   createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
 
   application        Application         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   interviewer        User                @relation("InterviewerSchedules", fields: [interviewerId], references: [id])
   interviewFeedbacks InterviewFeedback[]
 
+  @@index([applicationId])
+  @@index([interviewerId])
   @@map("interview_schedules")
 }
 
@@ -664,19 +673,40 @@ model InterviewFeedback {
   interviewId    String   @map("interview_id")
   interviewerId  String   @map("interviewer_id")
   scorecardJson  Json?    @map("scorecard_json")
-  recommendation String?
+  recommendation String?  // STRONG_HIRE, HIRE, NEUTRAL, DO_NOT_HIRE, STRONG_DO_NOT_HIRE
   notes          String?  @db.Text
   submittedAt    DateTime @default(now()) @map("submitted_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
 
   interview   InterviewSchedule @relation(fields: [interviewId], references: [id], onDelete: Cascade)
   interviewer User              @relation("InterviewerFeedbacks", fields: [interviewerId], references: [id])
 
+  @@unique([interviewId, interviewerId])
   @@map("interview_feedbacks")
 }
 
 // -------------------------------------------------------------
 // Messaging, Notifications, Audit & Background Jobs
 // -------------------------------------------------------------
+model ApplicationMessage {
+  id            String    @id @default(uuid())
+  applicationId String    @map("application_id")
+  senderId      String    @map("sender_id")
+  receiverId    String    @map("receiver_id")
+  body          String    @db.Text
+  isRead        Boolean   @default(false) @map("is_read")
+  readAt        DateTime? @map("read_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  sender      User        @relation("SentApplicationMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User        @relation("ReceivedApplicationMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+  @@index([receiverId, isRead])
+  @@map("application_messages")
+}
+
 model Message {
   id         String   @id @default(uuid())
   threadId   String   @map("thread_id")
@@ -693,17 +723,21 @@ model Message {
 }
 
 model Notification {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  type        String
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  type        String    // APPLICATION_STATUS_CHANGED, NEW_MESSAGE, INTERVIEW_SCHEDULED, INTERVIEW_CANCELLED, FEEDBACK_SUBMITTED
   title       String
-  message     String   @db.Text
-  payloadJson Json?    @map("payload_json")
-  isRead      Boolean  @default(false) @map("is_read")
-  createdAt   DateTime @default(now()) @map("created_at")
+  message     String    @db.Text
+  link        String?
+  payloadJson Json?     @map("payload_json")
+  isRead      Boolean   @default(false) @map("is_read")
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, isRead])
+  @@index([createdAt])
   @@map("notifications")
 }
 

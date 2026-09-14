@@ -19,7 +19,14 @@ import {
   HelpCircle,
   BarChart2,
   CheckCircle2,
+  MessageSquare,
+  Calendar,
 } from 'lucide-react';
+import { ApplicationMessageDrawer } from '../../communication/components/ApplicationMessageDrawer';
+import { InterviewSchedulerModal } from '../../communication/components/InterviewSchedulerModal';
+import { InterviewScorecardModal } from '../../communication/components/InterviewScorecardModal';
+import { InterviewScheduleList } from '../../communication/components/InterviewScheduleList';
+import type { InterviewScheduleDto } from '../../communication/types';
 
 interface CandidateDetailDrawerProps {
   candidate: PipelineCandidateDto | null;
@@ -49,6 +56,10 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
   const [noteContent, setNoteContent] = useState('');
   const [starRating, setStarRating] = useState<number>(0);
   const [isSubmittingNote, setIsSubmittingNote] = useState(false);
+  const [isMessageDrawerOpen, setIsMessageDrawerOpen] = useState(false);
+  const [isSchedulerModalOpen, setIsSchedulerModalOpen] = useState(false);
+  const [selectedInterviewForScorecard, setSelectedInterviewForScorecard] =
+    useState<InterviewScheduleDto | null>(null);
 
   if (!isOpen || !candidate) return null;
 
@@ -120,6 +131,31 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Quick Communication & Scheduling Actions (FR-RC-17, FR-RC-18) */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsMessageDrawerOpen(true)}
+              className="text-xs font-semibold gap-1.5 justify-center border-brand-200 text-brand-700 bg-brand-50/50 hover:bg-brand-100/60"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-brand-600" />
+              <span>Direct Chat</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSchedulerModalOpen(true)}
+              className="text-xs font-semibold gap-1.5 justify-center border-emerald-200 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100/60"
+            >
+              <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Schedule Call</span>
+            </Button>
           </div>
 
           {/* Contact Details & Info */}
@@ -231,6 +267,18 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
               </div>
             </div>
           )}
+
+          {/* Interviews & Scorecards (FR-RC-18, FR-RC-19, FR-RC-20) */}
+          <div className="pt-2 border-t border-border-default">
+            <InterviewScheduleList
+              applicationId={candidate.id}
+              candidateName={candidate.fullName}
+              jobTitle={candidate.jobTitle}
+              isRecruiter={true}
+              onOpenScheduleModal={() => setIsSchedulerModalOpen(true)}
+              onOpenScorecard={(interview) => setSelectedInterviewForScorecard(interview)}
+            />
+          </div>
 
           {/* Internal Team Notes & Star Ratings (FR-RC-15) */}
           <div className="space-y-3 pt-2 border-t border-border-default">
@@ -377,6 +425,33 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Direct Messaging Drawer */}
+      <ApplicationMessageDrawer
+        isOpen={isMessageDrawerOpen}
+        onClose={() => setIsMessageDrawerOpen(false)}
+        applicationId={candidate.id}
+        candidateName={candidate.fullName}
+        jobTitle={candidate.jobTitle}
+        currentUserId={currentUserId}
+      />
+
+      {/* Interview Scheduler Modal */}
+      <InterviewSchedulerModal
+        isOpen={isSchedulerModalOpen}
+        onClose={() => setIsSchedulerModalOpen(false)}
+        applicationId={candidate.id}
+        candidateName={candidate.fullName}
+        jobTitle={candidate.jobTitle}
+      />
+
+      {/* Structured Scorecard Evaluation Modal */}
+      <InterviewScorecardModal
+        isOpen={Boolean(selectedInterviewForScorecard)}
+        onClose={() => setSelectedInterviewForScorecard(null)}
+        interview={selectedInterviewForScorecard}
+        applicationId={candidate.id}
+      />
     </div>
   );
 };
