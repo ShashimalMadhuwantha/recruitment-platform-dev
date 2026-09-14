@@ -323,17 +323,37 @@ export class CommunicationService {
       }
     }
 
-    const candidateName = `${application.applicant.firstName} ${application.applicant.lastName}`;
+    const candidateName = `${application.applicant.firstName} ${application.applicant.lastName}`.trim();
     const interviewerName = formatInterviewerName(interview.interviewer);
+    const formattedInterviewTime = `${scheduledDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })} at ${scheduledDate.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })} (${interview.timezone || 'UTC'})`;
+    const meetingLink = interview.videoLink || interview.location || 'See candidate portal for meeting details';
 
-    // Send notifications to candidate & interviewer
+    // Send notifications to candidate & interviewer with dynamic template variables
     await notificationService.createNotification(
       application.applicant.userId,
       'INTERVIEW_SCHEDULED',
       `Interview Scheduled: ${interview.title}`,
-      `Your interview for ${application.job.title} has been scheduled for ${scheduledDate.toUTCString()} (${interview.durationMins} mins).`,
+      `Your interview for ${application.job.title} has been scheduled for ${formattedInterviewTime} (${interview.durationMins} mins).`,
       `/applicant/dashboard`,
-      { interviewId: interview.id, applicationId }
+      {
+        interviewId: interview.id,
+        applicationId,
+        candidate_name: candidateName,
+        job_title: application.job.title,
+        company_name: application.job.company.name,
+        interview_time: formattedInterviewTime,
+        interview_type: interview.interviewType,
+        meeting_link: meetingLink,
+        recruiter_name: interviewerName,
+      }
     );
 
     return {

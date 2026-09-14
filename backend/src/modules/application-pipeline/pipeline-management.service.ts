@@ -343,7 +343,10 @@ export class PipelineManagementService {
 
     const application = await prisma.application.findUnique({
       where: { id: applicationId },
-      include: { job: true, applicant: true },
+      include: {
+        job: { include: { company: true } },
+        applicant: true,
+      },
     });
 
     if (!application) {
@@ -386,13 +389,22 @@ export class PipelineManagementService {
 
     // Notify candidate of status change (FR-AP-27)
     try {
+      const candidateName = `${application.applicant.firstName} ${application.applicant.lastName}`.trim();
       await notificationService.createNotification(
         application.applicant.userId,
         'APPLICATION_STATUS_CHANGED',
         `Application Status Update: ${targetStage.name}`,
         `Your application for ${application.job.title} has progressed to ${targetStage.name}.`,
         `/applicant/dashboard`,
-        { applicationId, fromStage: application.status, toStage: dto.stage }
+        {
+          applicationId,
+          fromStage: application.status,
+          toStage: dto.stage,
+          candidate_name: candidateName,
+          job_title: application.job.title,
+          company_name: application.job.company.name,
+          stage_name: targetStage.name,
+        }
       );
     } catch (err) {
       console.error('Failed to create status notification:', err);

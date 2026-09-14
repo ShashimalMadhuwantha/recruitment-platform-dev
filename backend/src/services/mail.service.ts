@@ -9,7 +9,7 @@ export class MailService {
         secure: config.SMTP_SECURE !== undefined ? config.SMTP_SECURE : true,
         auth: {
           user: config.SMTP_USER,
-          pass: config.SMTP_PASS,
+          pass: config.SMTP_PASS?.replace(/\s+/g, '') || config.SMTP_PASS,
         },
       })
     : null;
@@ -63,16 +63,17 @@ export class MailService {
 
     if (this.transporter) {
       try {
-        await this.transporter.sendMail({
+        const info = await this.transporter.sendMail({
           from: config.SMTP_FROM,
           to,
           subject: 'Reset Your RecruitATS Password',
           html: htmlContent,
           text: `You requested a password reset. Reset your password here: ${resetUrl}`,
         });
+        console.log(`📧 [MailService] ✅ Password reset email dispatched to: ${to} (MessageId: ${info.messageId})`);
         return true;
-      } catch (error) {
-        console.error('❌ Failed to send reset email via SMTP:', error);
+      } catch (error: any) {
+        console.error(`📧 [MailService] ❌ Failed to send reset email to ${to}:`, error.message || error);
         return false;
       }
     } else {
@@ -132,16 +133,17 @@ export class MailService {
 
     if (this.transporter) {
       try {
-        await this.transporter.sendMail({
+        const info = await this.transporter.sendMail({
           from: config.SMTP_FROM,
           to,
           subject,
           html: htmlContent,
           text: `${title}\n\n${message}\n\n${actionUrl || ''}`,
         });
+        console.log(`📧 [MailService] ✅ Notification email dispatched to: ${to} | Subject: ${subject} (MessageId: ${info.messageId})`);
         return true;
-      } catch (error) {
-        console.error('❌ Failed to send notification email via SMTP:', error);
+      } catch (error: any) {
+        console.error(`📧 [MailService] ❌ Failed to send notification email via SMTP to ${to}:`, error.message || error);
         return false;
       }
     } else {
