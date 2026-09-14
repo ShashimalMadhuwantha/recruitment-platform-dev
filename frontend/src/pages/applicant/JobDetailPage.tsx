@@ -87,13 +87,20 @@ export const JobDetailPage: React.FC = () => {
       <div className="bg-surface rounded-xl border border-border-default p-6 sm:p-8 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-xl bg-brand-50 border border-brand-200 flex items-center justify-center font-bold text-brand-700 text-2xl shrink-0">
+            <Link
+              to={`/companies/${job.companyId}`}
+              className="w-14 h-14 rounded-xl bg-brand-50 border border-brand-200 hover:border-brand-400 flex items-center justify-center font-bold text-brand-700 text-2xl shrink-0 transition"
+              title={`View ${job.companyName} employer profile`}
+            >
               {job.companyName.charAt(0)}
-            </div>
+            </Link>
             <div>
-              <span className="text-xs font-semibold text-text-secondary">
+              <Link
+                to={`/companies/${job.companyId}`}
+                className="text-xs font-semibold text-text-secondary hover:text-brand-600 transition inline-block"
+              >
                 {job.companyName} • {job.companyIndustry || 'Technology'}
-              </span>
+              </Link>
               <h1 className="text-2xl sm:text-3xl font-bold text-brand-900 tracking-tight mt-0.5">
                 {job.title}
               </h1>

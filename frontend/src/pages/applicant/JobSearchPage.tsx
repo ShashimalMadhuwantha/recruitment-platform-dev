@@ -238,11 +238,20 @@ export const JobSearchPage: React.FC = () => {
                     {/* Top Row: Company & Bookmark */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-lg bg-brand-50 border border-brand-200 flex items-center justify-center font-bold text-brand-700 text-sm">
+                        <Link
+                          to={`/companies/${job.companyId}`}
+                          className="w-9 h-9 rounded-lg bg-brand-50 border border-brand-200 hover:border-brand-400 flex items-center justify-center font-bold text-brand-700 text-sm shrink-0 transition"
+                          title={`View ${job.companyName} profile`}
+                        >
                           {job.companyName.charAt(0)}
-                        </div>
+                        </Link>
                         <div>
-                          <p className="text-xs font-semibold text-text-secondary">{job.companyName}</p>
+                          <Link
+                            to={`/companies/${job.companyId}`}
+                            className="text-xs font-semibold text-text-secondary hover:text-brand-600 transition block line-clamp-1"
+                          >
+                            {job.companyName}
+                          </Link>
                           <Link
                             to={`/jobs/${job.id}`}
                             className="text-sm font-bold text-brand-900 hover:text-brand-600 transition line-clamp-1"

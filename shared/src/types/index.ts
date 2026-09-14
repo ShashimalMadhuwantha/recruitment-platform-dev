@@ -1539,5 +1539,108 @@ export interface RequestPlanUpgradeDto {
   note?: string;
 }
 
+// -------------------------------------------------------------
+// Epic 18: Applicant Company Discovery & Employer Profile Hub
+// -------------------------------------------------------------
+export interface PublicCompanyOfficeLocation {
+  id?: string;
+  name: string;
+  isHQ: boolean;
+  address?: string;
+  city: string;
+  state?: string;
+  country: string;
+}
 
+export interface PublicCompanyCultureMedia {
+  id: string;
+  type: 'IMAGE' | 'VIDEO';
+  url: string;
+  caption?: string;
+  order: number;
+}
 
+export interface PublicCompanySocialLinks {
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  facebook?: string;
+  youtube?: string;
+  glassdoor?: string;
+}
+
+export interface PublicCompanySummaryDto {
+  id: string;
+  name: string;
+  slug: string;
+  industry: string | null;
+  size: string | null;
+  logoUrl: string | null;
+  coverPhotoUrl: string | null;
+  website: string | null;
+  description: string | null;
+  headquarters: string | null;
+  activeJobCount: number;
+  followerCount: number;
+  isFollowedByMe?: boolean;
+  createdAt: string;
+}
+
+export interface PublicCompanyDetailDto {
+  id: string;
+  name: string;
+  slug: string;
+  industry: string | null;
+  size: string | null;
+  logoUrl: string | null;
+  coverPhotoUrl: string | null;
+  website: string | null;
+  description: string | null;
+  locations: PublicCompanyOfficeLocation[];
+  cultureMedia: PublicCompanyCultureMedia[];
+  socialLinks: PublicCompanySocialLinks;
+  activeJobCount: number;
+  followerCount: number;
+  isFollowedByMe?: boolean;
+  createdAt: string;
+}
+
+export interface PublicCompanyJobItemDto {
+  id: string;
+  title: string;
+  slug?: string;
+  department?: string | null;
+  employmentType: string;
+  workplaceType: string;
+  location?: string | null;
+  experienceLevel?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salaryCurrency?: string | null;
+  skills: string[];
+  createdAt: string;
+  predictedAtsScore?: number | null;
+  hasApplied?: boolean;
+}
+
+export interface PublicCompanyJobsResponseDto {
+  jobs: PublicCompanyJobItemDto[];
+  total: number;
+}
+
+export interface ToggleCompanyFollowResponseDto {
+  isFollowed: boolean;
+  followerCount: number;
+}
+
+export interface CompanyDiscoveryQueryDto {
+  page?: number;
+  limit?: number;
+  keyword?: string;
+  industry?: string;
+  location?: string;
+  size?: string;
+  hasActiveJobs?: boolean;
+  sortBy?: 'name' | 'activeJobs' | 'followers' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+}

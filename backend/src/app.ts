@@ -23,6 +23,7 @@ import offersRouter from './modules/offers/offers.routes';
 import careerToolsRouter from './modules/career-tools/career-tools.routes';
 import analyticsRouter from './modules/analytics/analytics.routes';
 import { companyRouter, teamRouter } from './modules/company-team/company-team.routes';
+import companyDiscoveryRouter from './modules/company-discovery/company-discovery.routes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -89,6 +90,7 @@ export const createApp = (): Express => {
   app.use('/api/v1/analytics', analyticsRouter);
   app.use('/api/v1/company', companyRouter);
   app.use('/api/v1/team', teamRouter);
+  app.use('/api/v1/companies', companyDiscoveryRouter);
 
   // 404 Handler
   app.use((req: Request, _res: Response, next: NextFunction) => {

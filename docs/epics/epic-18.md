@@ -1,7 +1,7 @@
 # Epic 18 — Applicant: Company Discovery & Employer Profile Hub
 
 **Target Branch:** `epic/18-applicant-company-discovery`  
-**Status:** Planned / Ready for Implementation  
+**Status:** Complete  
 **Covers SRS Requirements:** FR-AP-31, FR-AP-32, FR-AP-33, FR-AP-34, FR-AP-35, FR-RC-01  
 **Design Skill Activated:** `recruitment-platform-frontend-design`  
 **Dev Skill Activated:** `recruitment-platform-dev`
