@@ -9,6 +9,7 @@ import {
   PublicCompanyOfficeLocation,
   PublicCompanyCultureMedia,
   PublicCompanySocialLinks,
+  CompanyDiscoveryQueryDto,
 } from '@recruitment-platform/shared';
 import { NotFoundError } from '../../middleware/error.middleware';
 import { AtsScoringService } from '../ats-scoring/ats-scoring.service';
@@ -63,7 +64,7 @@ export class CompanyDiscoveryService {
    * Public Company Directory Search & Filter (FR-AP-31)
    */
   static async searchCompanies(
-    query: CompanyDiscoveryQuery,
+    query: CompanyDiscoveryQueryDto = {},
     currentUserId?: string
   ): Promise<{
     items: PublicCompanySummaryDto[];
@@ -72,8 +73,11 @@ export class CompanyDiscoveryService {
     limit: number;
     totalPages: number;
   }> {
-    const { page, limit, keyword, industry, location, size, hasActiveJobs, sortBy, sortOrder } =
-      query;
+    const page = query.page && query.page > 0 ? query.page : 1;
+    const limit = query.limit && query.limit > 0 ? query.limit : 12;
+    const sortBy = query.sortBy || 'createdAt';
+    const sortOrder = query.sortOrder || 'desc';
+    const { keyword, industry, location, size, hasActiveJobs } = query;
 
     const where: any = {
       status: CompanyStatus.ACTIVE,

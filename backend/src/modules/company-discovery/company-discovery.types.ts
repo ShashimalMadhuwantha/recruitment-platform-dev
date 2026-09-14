@@ -8,14 +8,12 @@ export const companyDiscoveryQuerySchema = z.object({
   location: z.string().optional(),
   size: z.string().optional(),
   hasActiveJobs: z
-    .union([z.boolean(), z.string()])
-    .optional()
-    .transform((val) => {
-      if (typeof val === 'string') {
-        return val.toLowerCase() === 'true';
-      }
+    .preprocess((val) => {
+      if (val === undefined || val === null || val === '') return undefined;
+      if (typeof val === 'string') return val.toLowerCase() === 'true';
       return Boolean(val);
-    }),
+    }, z.boolean().optional())
+    .optional(),
   sortBy: z.enum(['name', 'activeJobs', 'followers', 'createdAt']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
