@@ -1644,3 +1644,87 @@ export interface CompanyDiscoveryQueryDto {
   sortBy?: 'name' | 'activeJobs' | 'followers' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
 }
+
+// -------------------------------------------------------------
+// Epic 15: Applicant Account, Privacy, Notification Preferences & GDPR
+// -------------------------------------------------------------
+export interface NotificationPreferenceDto {
+  userId: string;
+  applicationStatusEmail: boolean;
+  applicationStatusInApp: boolean;
+  interviewInvitesEmail: boolean;
+  interviewInvitesInApp: boolean;
+  messagesEmail: boolean;
+  messagesInApp: boolean;
+  followedCompanyJobEmail: boolean;
+  followedCompanyJobInApp: boolean;
+  jobAlertsEmail: boolean;
+  jobAlertsInApp: boolean;
+  updatedAt: string;
+}
+
+export interface UpdateNotificationPreferenceDto {
+  applicationStatusEmail?: boolean;
+  applicationStatusInApp?: boolean;
+  interviewInvitesEmail?: boolean;
+  interviewInvitesInApp?: boolean;
+  messagesEmail?: boolean;
+  messagesInApp?: boolean;
+  followedCompanyJobEmail?: boolean;
+  followedCompanyJobInApp?: boolean;
+  jobAlertsEmail?: boolean;
+  jobAlertsInApp?: boolean;
+}
+
+export interface BlockedCompanyDto {
+  id: string;
+  companyId: string;
+  companyName: string;
+  companySlug: string;
+  companyLogoUrl: string | null;
+  companyIndustry: string | null;
+  reason?: string | null;
+  blockedAt: string;
+}
+
+export interface BlockCompanyInputDto {
+  companyId: string;
+  reason?: string;
+}
+
+export interface GdprExportDataDto {
+  exportedAt: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    status: string;
+    createdAt: string;
+  };
+  profile: any;
+  skills: any[];
+  education: any[];
+  workExperience: any[];
+  achievements: any[];
+  certifications: any[];
+  portfolios: any[];
+  cvs: any[];
+  applications: any[];
+  savedJobs: any[];
+  followedCompanies: any[];
+  blockedCompanies: any[];
+  notificationPreferences: any;
+}
+
+export interface RequestAccountErasureDto {
+  password?: string;
+  reason?: string;
+  confirmAcknowledgment: boolean;
+}
+
+export interface GdprErasureResponseDto {
+  requestId: string;
+  status: string;
+  slaDeadline: string;
+  message: string;
+}

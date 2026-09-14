@@ -137,15 +137,15 @@ describe('Epic 18 — Applicant: Company Discovery & Employer Profile Hub (Front
         email: 'applicant@example.com',
         role: 'APPLICANT',
         status: 'ACTIVE',
+        mfaEnabled: false,
       },
-      token: 'mock-token',
+      accessToken: 'mock-token',
+      refreshToken: 'mock-refresh-token',
+      isAuthenticated: true,
+      isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
-      register: vi.fn(),
-      impersonate: vi.fn(),
-      revertImpersonation: vi.fn(),
-      isImpersonating: false,
-      impersonator: null,
+      updateUser: vi.fn(),
     });
   });
 

@@ -9,6 +9,7 @@ import MfaVerificationPage from '../pages/auth/MfaVerificationPage';
 import OAuthCallbackPage from '../pages/auth/OAuthCallbackPage';
 import ApplicantDashboardPage from '../pages/applicant/ApplicantDashboardPage';
 import ApplicantProfilePage from '../pages/applicant/ApplicantProfilePage';
+import { ApplicantSettingsPage } from '../pages/applicant/ApplicantSettingsPage';
 import JobSearchPage from '../pages/applicant/JobSearchPage';
 import JobDetailPage from '../pages/applicant/JobDetailPage';
 import CompanyDirectoryPage from '../pages/applicant/CompanyDirectoryPage';
@@ -77,6 +78,14 @@ export const AppRouter: React.FC = () => {
             element={
               <ProtectedRoute allowedRoles={['APPLICANT', 'SUPER_ADMIN']}>
                 <ApplicantProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/applicant/settings"
+            element={
+              <ProtectedRoute allowedRoles={['APPLICANT', 'SUPER_ADMIN']}>
+                <ApplicantSettingsPage />
               </ProtectedRoute>
             }
           />

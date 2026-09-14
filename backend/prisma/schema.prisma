@@ -194,6 +194,8 @@ model User {
   candidateNotes      CandidateNote[]     @relation("UserCandidateNotes")
   sentTeamInvitations TeamInvitation[]    @relation("SentTeamInvitations")
   followedCompanies   CompanyFollow[]     @relation("ApplicantCompanyFollows")
+  notificationPreference UserNotificationPreference?
+  companyBlocks          CompanyBlock[]               @relation("ApplicantCompanyBlocks")
 
   @@map("users")
 }
@@ -325,6 +327,7 @@ model Company {
   diversitySurveyResponses DiversitySurveyResponse[]
   teamInvitations    TeamInvitation[]
   followers          CompanyFollow[]     @relation("CompanyFollowers")
+  blockedByApplicants CompanyBlock[]      @relation("BlockedByApplicants")
 
   @@map("companies")
 }
@@ -1024,5 +1027,48 @@ model CompanyFollow {
   @@index([applicantId])
   @@index([companyId])
   @@map("company_follows")
+}
+
+// -------------------------------------------------------------
+// Applicant Notification Preferences (FR-AP-28)
+// -------------------------------------------------------------
+model UserNotificationPreference {
+  id                      String   @id @default(uuid())
+  userId                  String   @unique @map("user_id")
+  applicationStatusEmail  Boolean  @default(true) @map("application_status_email")
+  applicationStatusInApp  Boolean  @default(true) @map("application_status_in_app")
+  interviewInvitesEmail   Boolean  @default(true) @map("interview_invites_email")
+  interviewInvitesInApp   Boolean  @default(true) @map("interview_invites_in_app")
+  messagesEmail           Boolean  @default(true) @map("messages_email")
+  messagesInApp           Boolean  @default(true) @map("messages_in_app")
+  followedCompanyJobEmail Boolean  @default(true) @map("followed_company_job_email")
+  followedCompanyJobInApp Boolean  @default(true) @map("followed_company_job_in_app")
+  jobAlertsEmail          Boolean  @default(false) @map("job_alerts_email")
+  jobAlertsInApp          Boolean  @default(true) @map("job_alerts_in_app")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_notification_preferences")
+}
+
+// -------------------------------------------------------------
+// Company Blocks / Concealment (FR-AP-30)
+// -------------------------------------------------------------
+model CompanyBlock {
+  id          String   @id @default(uuid())
+  applicantId String   @map("applicant_id")
+  companyId   String   @map("company_id")
+  reason      String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  applicant   User     @relation("ApplicantCompanyBlocks", fields: [applicantId], references: [id], onDelete: Cascade)
+  company     Company  @relation("BlockedByApplicants", fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([applicantId, companyId], name: "unique_applicant_company_block")
+  @@index([applicantId])
+  @@index([companyId])
+  @@map("company_blocks")
 }
 

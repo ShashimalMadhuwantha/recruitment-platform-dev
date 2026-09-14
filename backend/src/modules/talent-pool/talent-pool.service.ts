@@ -22,6 +22,16 @@ export class TalentPoolService {
     const limit = Math.min(100, Math.max(1, Number(params.limit) || 12));
     const skip = (page - 1) * limit;
 
+    // FR-RC-11, FR-AP-30: Determine querying recruiter's company to enforce employer blocklist
+    let recruiterCompanyId: string | null = null;
+    if (recruiterRole !== 'SUPER_ADMIN') {
+      const recruiter = await prisma.recruiterProfile.findUnique({
+        where: { userId: recruiterUserId },
+        select: { companyId: true },
+      });
+      recruiterCompanyId = recruiter?.companyId || null;
+    }
+
     // Fetch active applicants
     const applicants = await prisma.applicantProfile.findMany({
       where: {
@@ -32,7 +42,14 @@ export class TalentPoolService {
       },
       orderBy: { createdAt: 'desc' },
       include: {
-        user: { select: { id: true, email: true, status: true } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            status: true,
+            companyBlocks: { select: { companyId: true } },
+          },
+        },
         applicantSkills: { include: { skill: true } },
         workExperiences: true,
         educations: true,
@@ -45,8 +62,18 @@ export class TalentPoolService {
       },
     });
 
-    // Parse and filter by visibility settings
+    // Parse and filter by visibility settings and company blocklists
     const eligibleCandidates = applicants.filter((profile) => {
+      // FR-RC-11, FR-AP-30: Strictly conceal candidate if they blocked the recruiter's employer
+      if (recruiterCompanyId) {
+        const hasBlockedCompany = profile.user.companyBlocks?.some(
+          (block) => block.companyId === recruiterCompanyId
+        );
+        if (hasBlockedCompany) {
+          return false;
+        }
+      }
+
       let visibility: 'PUBLIC' | 'BLIND' | 'PRIVATE' = 'PUBLIC';
       let isSearchable = true;
 
@@ -62,6 +89,15 @@ export class TalentPoolService {
           }
           if (settings.isSearchable !== undefined) {
             isSearchable = Boolean(settings.isSearchable);
+          }
+
+          // Also check legacy hideFromCompanies in visibilitySettings JSON
+          if (
+            recruiterCompanyId &&
+            Array.isArray(settings.hideFromCompanies) &&
+            settings.hideFromCompanies.includes(recruiterCompanyId)
+          ) {
+            return false;
           }
         } catch {
           // default to public

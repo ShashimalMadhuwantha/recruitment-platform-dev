@@ -1,7 +1,7 @@
 # Epic 15 — Applicant: Account, Privacy, Notification Preferences & GDPR Compliance
 
 **Target Branch:** `epic/15-applicant-privacy-compliance`  
-**Status:** Ready for Implementation  
+**Status:** Complete  
 **Covers SRS Requirements:** FR-AP-28, FR-AP-29, FR-AP-30, FR-AP-10, FR-RC-11, UC-14  
 **Design Skill Activated:** `recruitment-platform-frontend-design`  
 **Dev Skill Activated:** `recruitment-platform-dev`

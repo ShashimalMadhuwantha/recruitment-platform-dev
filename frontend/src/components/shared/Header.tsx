@@ -167,6 +167,12 @@ export const Header: React.FC<HeaderProps> = ({ userRole, userEmail, onLogout })
             >
               Resume / CV
             </Link>
+            <Link
+              to="/applicant/settings"
+              className="px-3 py-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Settings
+            </Link>
           </nav>
         )}
 

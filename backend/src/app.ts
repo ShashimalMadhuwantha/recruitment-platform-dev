@@ -24,6 +24,7 @@ import careerToolsRouter from './modules/career-tools/career-tools.routes';
 import analyticsRouter from './modules/analytics/analytics.routes';
 import { companyRouter, teamRouter } from './modules/company-team/company-team.routes';
 import companyDiscoveryRouter from './modules/company-discovery/company-discovery.routes';
+import applicantPrivacyRouter from './modules/applicant-privacy/applicant-privacy.routes';
 
 export const createApp = (): Express => {
   const app = express();
@@ -71,6 +72,7 @@ export const createApp = (): Express => {
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/ats', atsScoringRouter);
   app.use('/api/v1/ats-scoring', atsScoringRouter);
+  app.use('/api/v1/applicant/privacy', applicantPrivacyRouter);
   app.use('/api/v1/applicant', applicantProfileRouter);
   app.use('/api/v1/applicant-profiles', applicantProfileRouter);
   app.use('/api/v1/jobs', jobSearchRouter);
