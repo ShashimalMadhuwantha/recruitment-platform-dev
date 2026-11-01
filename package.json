@@ -24,6 +24,7 @@
     "db:push": "npm run db:push --workspace=backend",
     "db:migrate": "npm run db:migrate --workspace=backend",
     "db:seed": "npm run db:seed --workspace=backend",
+    "db:seed:demo": "npm run db:seed:open-jobs --workspace=backend && npm run db:seed:demo-applicant --workspace=backend",
     "db:studio": "npm run db:studio --workspace=backend"
   },
   "devDependencies": {
